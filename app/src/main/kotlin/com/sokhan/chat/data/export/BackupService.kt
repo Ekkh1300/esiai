@@ -72,7 +72,10 @@ class BackupService(
         bundle.conversations.forEach { backup ->
             val conversation = backup.toDomain()
             conversations.upsert(conversation)
-            backup.messages.forEach { message -> conversations.insertMessage(message.toDomain(conversation.id)) }
+            // Single transactional batch; upsert (not REPLACE) keeps this
+            // idempotent and preserves locally-referenced attachment rows,
+            // which backup payloads deliberately do not contain.
+            conversations.upsertMessages(conversation.id, backup.messages.map { it.toDomain(conversation.id) })
             if (existingConversations.contains(backup.id)) conversationsMerged++ else conversationsAdded++
         }
 

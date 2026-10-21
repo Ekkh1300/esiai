@@ -34,10 +34,6 @@
 -dontwarn org.commonmark.**
 
 # --- Coroutines ---
--keepclassmembers class kotlinx.coroutines.flow.** {
-    <init>(...);
-    <clinit>${...};
-}
 -dontwarn kotlinx.coroutines.**
 
 # --- Compose / AndroidX (shipped rules normally cover these; safe extras) ---

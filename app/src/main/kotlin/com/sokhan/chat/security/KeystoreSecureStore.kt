@@ -64,10 +64,19 @@ class KeystoreSecureStore(
         synchronized(lock) {
             runCatching {
                 file.parentFile?.mkdirs()
-                file.writeText(json.encodeToString(
+                // Atomic-ish write: a partial write can never destroy the
+                // previous store (power loss mid-write is the classic way to
+                // lose every saved API key).
+                val tmp = File(file.parentFile, "$fileName.tmp")
+                tmp.writeText(json.encodeToString(
                     MapSerializer(String.serializer(), String.serializer()),
                     values
                 ))
+                if (!tmp.renameTo(file)) {
+                    // Fallback (should not happen on POSIX, but stay safe).
+                    check(file.delete()) { "could not replace secure store" }
+                    check(tmp.renameTo(file)) { "could not move secure store" }
+                }
             }.onFailure { AppLog.e("Secure", "failed writing secure store", it) }
         }
     }
@@ -75,7 +84,15 @@ class KeystoreSecureStore(
     override fun read(key: String): String? {
         val cipherText = loadAll()[key] ?: return null
         return runCatching { decrypt(cipherText) }
-            .onFailure { AppLog.e("Secure", "failing to decrypt value; treat key as missing", it) }
+            .onFailure {
+                AppLog.e("Secure", "decrypt failed; rotating keystore alias", it)
+                // The stored record is unrecoverable with any key; rotate the
+                // alias so the NEXT write() can generate a fresh working key
+                // instead of failing forever on the broken entry.
+                runCatching {
+                    KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }.deleteEntry(alias)
+                }.onFailure { t -> AppLog.e("Secure", "alias rotation failed", t) }
+            }
             .getOrNull()
     }
 

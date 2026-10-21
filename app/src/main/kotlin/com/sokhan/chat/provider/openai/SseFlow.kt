@@ -48,7 +48,7 @@ fun OkHttpClient.sseDataFlow(request: Request): Flow<String> = channelFlow {
                 while (true) {
                     val line = source.readUtf8Line() ?: break
                     if (!line.startsWith("data:")) continue
-                    val payload = line.removePrefix("data:").removePrefix(" ").trim()
+                    val payload = line.removePrefix("data:").removePrefix(" ")
                     if (payload.isEmpty()) continue
                     send(payload)
                     if (payload == "[DONE]") break

@@ -87,6 +87,13 @@ class ConversationRepositoryImpl(
         }
     }
 
+    override suspend fun upsertMessages(conversationId: String, messages: List<Message>) {
+        db.withTransaction {
+            messages.forEach { messageDao.upsert(it.toEntity()) }
+            conversationDao.touch(conversationId, System.currentTimeMillis())
+        }
+    }
+
     override suspend fun insertUserMessageWithAttachments(
         message: Message,
         attachmentIds: List<String>

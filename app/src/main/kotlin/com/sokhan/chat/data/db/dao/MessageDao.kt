@@ -1,9 +1,8 @@
 package com.sokhan.chat.data.db.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.sokhan.chat.data.db.entity.MessageEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -28,10 +27,12 @@ interface MessageDao {
     @Query("SELECT COUNT(*) FROM messages WHERE conversationId = :conversationId")
     suspend fun count(conversationId: String): Int
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /** True upsert (no delete-then-insert) so FK rows (attachments) survive updates. */
+    @Upsert
     suspend fun upsert(entity: MessageEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /** True upsert (no delete-then-insert) so FK rows (attachments) survive updates. */
+    @Upsert
     suspend fun upsertAll(entities: List<MessageEntity>)
 
     @Query(

@@ -78,6 +78,10 @@ private class FakeConversationRepository : ConversationRepository {
         insertMessage(message)
     }
 
+    override suspend fun upsertMessages(conversationId: String, messages: List<Message>) {
+        messages.forEach { insertMessage(it) }
+    }
+
     override suspend fun updateMessageContent(
         messageId: String,
         content: String,

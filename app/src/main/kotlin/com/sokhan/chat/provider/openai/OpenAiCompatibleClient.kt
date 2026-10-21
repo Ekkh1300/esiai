@@ -247,6 +247,9 @@ class OpenAiCompatibleClient(
             choice.delta?.let { delta ->
                 val reasoning = delta.reasoningContent ?: delta.reasoning
                 if (!reasoning.isNullOrBlank()) {
+                    // A reasoning-only model (never emits final text) is a
+                    // valid, non-empty response — do not fail it as empty.
+                    gotContent = true
                     emit(Result.success(ChatStreamEvent.ReasoningDelta(reasoning)))
                 }
                 if (!delta.content.isNullOrEmpty()) {
@@ -284,7 +287,9 @@ class OpenAiCompatibleClient(
         val request = buildRequest(context, chatUrl(context))
             .withJsonBody(body)
             .build()
-        val (code, response) = probeClient.newCall(request).await()
+        // Non-streaming completions can legitimately take minutes; the probe
+        // client's 25s read timeout would abort normal generations.
+        val (code, response) = streamingClient.newCall(request).await()
         if (code != 200) {
             throw mapHttpStatusToError(code, response)
         }

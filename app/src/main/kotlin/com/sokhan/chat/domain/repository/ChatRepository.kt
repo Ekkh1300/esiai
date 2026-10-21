@@ -72,6 +72,12 @@ interface ConversationRepository {
     /** Message persistence (used by the engine and screens). */
     suspend fun insertMessage(message: Message)
     suspend fun insertUserMessageWithAttachments(message: Message, attachmentIds: List<String>)
+
+    /**
+     * Atomic batch upsert of a whole message list (backup import). Implemented
+     * inside a database transaction; messages keep their attachment relations.
+     */
+    suspend fun upsertMessages(conversationId: String, messages: List<Message>)
     suspend fun updateMessageContent(
         messageId: String,
         content: String,

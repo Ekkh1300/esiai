@@ -97,6 +97,10 @@ class StreamingChatEngine(
         messageId: String,
         newContent: String
     ): ChatError? {
+        // Verify a generation target exists BEFORE destroying trailing
+        // messages; otherwise a NoModel failure would lose the reply history.
+        val conversation = conversations.get(conversationId) ?: return ChatError.NoModel
+        if (resolveTarget(conversation) == null) return ChatError.NoModel
         conversations.updateMessageContent(
             messageId = messageId,
             content = newContent,
@@ -141,6 +145,10 @@ class StreamingChatEngine(
         clearTrailingAssistant: Boolean
     ): ChatError? {
         val conversation = conversations.get(conversationId) ?: return ChatError.NoModel
+        // Resolve the generation target BEFORE deleting anything: regenerate()
+        // clears the last assistant row, and if the target were missing that
+        // reply would be lost silently with only an error snackbar back.
+        val target = resolveTarget(conversation) ?: return ChatError.NoModel
 
         startMutex.withLock {
             if (clearTrailingAssistant) {
@@ -154,9 +162,11 @@ class StreamingChatEngine(
             markInactive(conversationId)
         }
 
-        val target = resolveTarget(conversation) ?: return ChatError.NoModel
         val replyId = Ids.newId()
-        val now = System.currentTimeMillis()
+        // Keep insertion strictly after the latest existing row so the
+        // (createdAt, id) ordering always reads replies below the user turn.
+        val lastAt = conversations.observeMessages(conversationId).first().lastOrNull()?.createdAt ?: 0L
+        val now = maxOf(System.currentTimeMillis(), lastAt + 1)
         conversations.insertMessage(
             Message(
                 id = replyId,
