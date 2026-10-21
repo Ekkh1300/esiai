@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">سخن</string>
+    <string name="app_tagline">کلید خودت را بیاور؛ با هر مدلی گفتگو کن.</string>
+
+    <!-- ══════════ Common ══════════ -->
+    <string name="common_ok">تأیید</string>
+    <string name="common_cancel">انصراف</string>
+    <string name="common_save">ذخیره</string>
+    <string name="common_delete">حذف</string>
+    <string name="common_edit">ویرایش</string>
+    <string name="common_done">انجام شد</string>
+    <string name="common_close">بستن</string>
+    <string name="common_retry">تلاش دوباره</string>
+    <string name="common_copy">کپی</string>
+    <string name="common_copied">در حافظه کپی شد</string>
+    <string name="common_share">هم‌رسانی</string>
+    <string name="common_search">جست‌وجو</string>
+    <string name="common_back">بازگشت</string>
+    <string name="common_more">بیشتر</string>
+    <string name="common_refresh">به‌روزرسانی</string>
+    <string name="common_add">افزودن</string>
+    <string name="common_remove">برداشتن</string>
+    <string name="common_name">نام</string>
+    <string name="common_optional">اختیاری</string>
+    <string name="common_confirm">تأیید</string>
+    <string name="common_apply">اعمال</string>
+    <string name="common_enabled">فعال</string>
+    <string name="common_disabled">غیرفعال</string>
+    <string name="common_unset">تنظیم نشده</string>
+    <string name="common_loading">در حال بارگذاری…</string>
+
+    <!-- ══════════ Navigation ══════════ -->
+    <string name="nav_chats">گفتگوها</string>
+    <string name="nav_assistants">دستیارها</string>
+    <string name="nav_settings">تنظیمات</string>
+
+    <!-- ══════════ Home / Chats list ══════════ -->
+    <string name="chats_title">گفتگوها</string>
+    <string name="chats_search_hint">جست‌وجوی گفتگوها…</string>
+    <string name="chats_new_chip">گفتگوی تازه</string>
+    <string name="chats_empty_title">هنوز چیزی نیست</string>
+    <string name="chats_empty_subtitle">گفتگویی آغاز کن، یا از دستیارها یکی را برای تعیین شخصیت انتخاب کن.</string>
+    <string name="chats_empty_no_provider">برای گفتگو با مدل‌ها، اول یک ارائه‌دهنده با کلید API خودت اضافه کن.</string>
+    <string name="chats_setup_provider">افزودن ارائه‌دهنده</string>
+    <string name="chats_pinned">سنجاق‌شده</string>
+    <string name="chats_archived">بایگانی‌شده</string>
+    <string name="chats_archive">بایگانی</string>
+    <string name="chats_unarchive">خروج از بایگانی</string>
+    <string name="chats_pin">سنجاق کردن</string>
+    <string name="chats_unpin">برداشتن سنجاق</string>
+    <string name="chats_rename">تغییر نام</string>
+    <string name="chats_delete_confirm">این گفتگو حذف شود؟ پیام‌هایش برای همیشه پاک می‌شوند.</string>
+    <string name="chats_filter_all">همه</string>
+    <string name="chats_filter_pinned">سنجاق‌شده</string>
+    <string name="chats_filter_archived">بایگانی</string>
+    <string name="chats_results_count">%1$d نتیجه</string>
+    <string name="chats_no_results">گفتگویی مطابق جست‌وجو پیدا نشد.</string>
+    <string name="chats_draft_title">گفتگوی تازه</string>
+    <string name="action_new_chat">گفتگوی تازه</string>
+    <string name="chats_empty_archived">گفتگوی بایگانی‌شده‌ای نیست.</string>
+    <string name="chats_needs_provider_hint">سرویس را برگزین و کلیدت را بچسبان — روی همین دستگاه می‌ماند.</string>
+    <string name="chats_preview_empty">هنوز پیامی نیست.</string>
+    <string name="a11y_toggle_archived">نمایش یا مخفی‌کردن گفتگوهای بایگانی</string>
+
+    <!-- ══════════ Chat screen ══════════ -->
+    <string name="chat_untitled">گفتگوی بی‌نام</string>
+    <string name="chat_input_hint">پیام</string>
+    <string name="chat_send">ارسال</string>
+    <string name="chat_send_describe">ارسال پیام</string>
+    <string name="chat_stop">توقف تولید</string>
+    <string name="chat_generating">در حال تولید…</string>
+    <string name="chat_thinking">در حال فکر کردن</string>
+    <string name="chat_reasoning">استدلال</string>
+    <string name="chat_reasoning_show">نمایش استدلال</string>
+    <string name="chat_reasoning_hide">پنهان‌کردن استدلال</string>
+    <string name="chat_copy_code">کپی کد</string>
+    <string name="chat_model_chip_no_model">مدلی انتخاب نشده</string>
+    <string name="chat_pick_model">انتخاب مدل</string>
+    <string name="chat_need_model">برای شروع، یک مدل انتخاب کن. ارائه‌دهنده‌ها در تنظیمات ← ارائه‌دهنده‌ها اضافه می‌شوند.</string>
+    <string name="chat_need_provider">هیچ ارائه‌دهنده‌ای تنظیم نشده. برای شروع یکی اضافه کن.</string>
+    <string name="chat_open_providers">رفتن به ارائه‌دهنده‌ها</string>
+    <string name="chat_regenerate">تولید دوباره</string>
+    <string name="chat_edit_message">ویرایش</string>
+    <string name="chat_resend">ارسال مجدد</string>
+    <string name="chat_delete_message">حذف پیام</string>
+    <string name="chat_delete_message_confirm">این پیام حذف شود؟</string>
+    <string name="chat_clear">پاک‌کردن گفتگو</string>
+    <string name="chat_clear_confirm">همهٔ پیام‌های این گفتگو پاک شود؟ این کار بازگشت‌پذیر نیست.</string>
+    <string name="chat_export_markdown">خروجی Markdown</string>
+    <string name="chat_system_prompt">پرامپت سیستم</string>
+    <string name="chat_system_prompt_hint">مدل چطور رفتار کند؟ خالی بگذار تا از پیش‌فرض استفاده شود.</string>
+    <string name="chat_system_prompt_use_default">استفاده از پرامپت سیستمی پیش‌فرض</string>
+    <string name="chat_edit_message_with_hint">ویرایش پیام</string>
+    <string name="chat_resend_hint">ارسال مجدد پیام</string>
+    <string name="chat_conversation_shared">گفتگو هم‌رسانی شد</string>
+    <string name="chat_export_saved">فایل Markdown ذخیره شد</string>
+    <string name="chat_scrolled_up">پیام‌های تازه</string>
+    <string name="chat_jump_down">پرش به آخرین پیام‌ها</string>
+
+    <!-- ══════════ Attachments ══════════ -->
+    <string name="attach_image">عکس از گالری</string>
+    <string name="attach_camera">دوربین</string>
+    <string name="attach_file">فایل متن یا PDF</string>
+    <string name="attach_remove">حذف پیوست</string>
+    <string name="attach_still_processing">پیوست در حال آماده‌سازی است…</string>
+    <string name="attach_failed">پیوست بارگذاری نشد</string>
+    <string name="attach_model_no_vision">این مدل نمی‌تواند تصویر ببیند — برای ارسال عکس، مدلی با قابلیت دید انتخاب کن.</string>
+    <string name="attach_model_no_pdf">این مدل فایل PDF را نمی‌خواند.</string>
+    <string name="attach_size_too_large">این فایل بزرگ‌تر از حد است (%1$s). سقف مجاز %2$s است.</string>
+    <string name="attach_size_too_large_hint">این فایل بزرگ‌تر از حد مجاز است. سقف‌ها: تصویر ۲۵ مگابایت، PDF ۲۰ مگابایت، متن ۱ مگابایت.</string>
+    <string name="attach_image_failed_read">خواندن این تصویر ناموفق بود.</string>
+
+    <!-- ══════════ Providers ══════════ -->
+    <string name="providers_title">ارائه‌دهنده‌ها</string>
+    <string name="providers_add_fab">افزودن ارائه‌دهنده</string>
+    <string name="providers_empty_title">مدل خودت را بیاور</string>
+    <string name="providers_empty_subtitle">هر API سازگار با OpenAI را اضافه کن — OpenAI، DeepSeek، OpenRouter، Ollama و صدها سرویس دیگر. کلیدت فقط روی همین دستگاه می‌ماند.</string>
+    <string name="provider_editor_new">ارائه‌دهندهٔ تازه</string>
+    <string name="provider_editor_title">ارائه‌دهنده</string>
+    <string name="provider_name_hint">نام ارائه‌دهنده</string>
+    <string name="provider_base_url_hint">آدرس پایه</string>
+    <string name="provider_base_url_helper">نقطهٔ اتصال سازگار با OpenAI؛ مثل https://api.openai.com/v1</string>
+    <string name="provider_api_key_hint">کلید API</string>
+    <string name="provider_api_key_keep">کلید فعلی حفظ شود</string>
+    <string name="provider_api_key_saved">کلید به‌صورت رمزنگاری‌شده ذخیره شد · هرگز در گزارش‌ها نوشته نمی‌شود</string>
+    <string name="provider_show_key">نمایش کلید API</string>
+    <string name="provider_hide_key">پنهان‌کردن کلید API</string>
+    <string name="provider_org_hint">سازمان (اختیاری)</string>
+    <string name="provider_org_helper">به‌عنوان سرآیند OpenAI-Organization ارسال می‌شود.</string>
+    <string name="provider_api_version_hint">نسخهٔ API (اختیاری)</string>
+    <string name="provider_api_version_helper">برای نقاط اتصال به سبک Azure به‌شکل ?api-version= افزوده می‌شود.</string>
+    <string name="provider_default_model">مدل پیش‌فرض</string>
+    <string name="provider_default_model_helper">برای گفتگوهای تازهٔ همین ارائه‌دهنده از پیش ست می‌شود.</string>
+    <string name="provider_streaming">پاسخ‌های استریم‌شده</string>
+    <string name="provider_include_usage">درخواست آمار توکن هنگام استریم (stream_options)</string>
+    <string name="provider_param_temperature">دما</string>
+    <string name="provider_param_max_tokens">حداکثر توکن</string>
+    <string name="provider_param_top_p">Top-P</string>
+    <string name="provider_param_frequency">جریمهٔ بسامد</string>
+    <string name="provider_param_presence">جریمهٔ حضور</string>
+    <string name="provider_params_helper">برای استفاده از مقدار پیش‌فرض ارائه‌دهنده، فیلد را خالی بگذار. مقادیر برای گفتگوهای تازه اعمال می‌شوند.</string>
+    <string name="provider_headers_title">سرآیندهای سفارشی</string>
+    <string name="provider_headers_helper">همراه هر درخواست به این ارائه‌دهنده ارسال می‌شوند.</string>
+    <string name="provider_header_key">نام سرآیند</string>
+    <string name="provider_header_value">مقدار سرآیند</string>
+    <string name="provider_capacity_title">قابلیت‌ها</string>
+    <string name="provider_cap_text_files">فایل‌های متنی</string>
+    <string name="provider_cap_pdf">ورودی PDF</string>
+    <string name="provider_cap_vision">تصاویر (بینیایی)</string>
+    <string name="provider_cap_models_list">نقطهٔ اتصال فهرست مدل</string>
+    <string name="provider_capacity_helper">اگر ارائه‌دهندهٔ موردنظر قابلیتی را پشتیبانی نمی‌کند، خاموشش کن تا سخن آن را پیشنهاد ندهد.</string>
+    <string name="provider_test">تست اتصال</string>
+    <string name="provider_testing">در حال تست اتصال…</string>
+    <string name="provider_test_title">نتیجهٔ تست</string>
+    <string name="provider_test_ok">متصل</string>
+    <string name="provider_test_fail">تست ناموفق</string>
+    <string name="provider_test_step_base">دسترسی به نقطهٔ اتصال</string>
+    <string name="provider_test_step_auth">کلید API پذیرفته شد</string>
+    <string name="provider_test_step_models">فهرست مدل‌ها دریافت شد (%1$d)</string>
+    <string name="provider_test_step_models_without_key">فهرست مدل‌ها بدون کلید دریافت شد (%1$d)</string>
+    <string name="provider_test_models_skip">فهرست مدل‌ها در دسترس نیست — می‌توانی مدل‌ها را دستی اضافه کنی.</string>
+    <string name="provider_refresh_models">به‌روزرسانی مدل‌ها</string>
+    <string name="provider_refresh_models_ok">%1$d مدل به‌روزرسانی شد</string>
+    <string name="provider_duplicate">تکثیر</string>
+    <string name="provider_duplicated">ارائه‌دهنده تکثیر شد</string>
+    <string name="provider_set_active">تنظیم به‌عنوان پیش‌فرض</string>
+    <string name="provider_active">ارائه‌دهندهٔ پیش‌فرض</string>
+    <string name="provider_active_chip">پیش‌فرض</string>
+    <string name="provider_saved">ارائه‌دهنده ذخیره شد</string>
+    <string name="provider_deleted">ارائه‌دهنده حذف شد</string>
+    <string name="provider_delete_confirm">«%1$s» حذف شود؟ گفتگوها با سایر ارائه‌دهنده‌ها همچنان کار می‌کنند؛ کلید API آن از این دستگاه پاک می‌شود.</string>
+    <string name="provider_error_name">نام الزامی است.</string>
+    <string name="provider_error_url">آدرس پایهٔ معتبر http(s) وارد کن؛ مثل https://api.openai.com/v1</string>
+    <string name="provider_error_key">برای تست اتصال، کلید API وارد کن.</string>
+    <string name="provider_no_models_hint">هنوز مدلی نیست — از API به‌روزرسانی کن یا دستی اضافه کن.</string>
+    <string name="provider_openai_styled_note">هر سرویسی که ساختار Chat Completions اوپن‌ای‌آی را پیاده کرده باشد، بدون تغییری کار می‌کند.</string>
+
+    <!-- quick presets -->
+    <string name="provider_preset_title">راه‌اندازی سریع</string>
+    <string name="provider_preset_helper">فقط آدرس پایه پر می‌شود؛ کلیدها هرگز از پیش پر نمی‌شوند.</string>
+
+    <!-- ══════════ Models ══════════ -->
+    <string name="models_title">مدل‌ها</string>
+    <string name="models_search_hint">پالایش مدل‌ها…</string>
+    <string name="models_refresh">به‌روزرسانی از API</string>
+    <string name="models_refreshed">%1$d مدل از API دریافت شد</string>
+    <string name="models_add_manual">افزودن دستی مدل</string>
+    <string name="models_manual_title">مدل تازه</string>
+    <string name="models_manual_id">شناسهٔ مدل</string>
+    <string name="models_manual_id_helper">دقیقاً همان چیزی که API انتظار دارد؛ مثل gpt-4o-mini</string>
+    <string name="models_manual_name">نام نمایشی (اختیاری)</string>
+    <string name="models_manual_context">طول متن (توکن، اختیاری)</string>
+    <string name="models_empty">هنوز مدلی نیست</string>
+    <string name="models_empty_hint">با دکمهٔ به‌روزرسانی فهرست ارائه‌دهنده را بگیر، یا دستی اضافه کن.</string>
+    <string name="models_hidden">پنهان</string>
+    <string name="models_show">نمایش</string>
+    <string name="models_delete_manual">حذف مدل دستی</string>
+    <string name="models_refresh_failed">دریافت مدل‌ها ناموفق بود — نقطهٔ اتصال و کلید را بررسی کن، یا دستی اضافه کن.</string>
+    <string name="models_can_edit_caps">برای ویرایش قابلیت‌ها روی هر مدل بزن.</string>
+    <string name="models_vision">بینیایی</string>
+    <string name="models_streaming">استریم</string>
+    <string name="models_tools">ابزارها</string>
+    <string name="models_reasoning">استدلال</string>
+    <string name="models_files">فایل</string>
+    <string name="models_pdf">PDF</string>
+
+    <!-- ══════════ Assistants ══════════ -->
+    <string name="assistants_title">دستیارها</string>
+    <string name="assistants_add_fab">دستیار تازه</string>
+    <string name="assistants_empty_title">به گفتگوهایت شخصیت بده</string>
+    <string name="assistants_empty_subtitle">دستیارها پرامپت سیستم، مدل و پارامترها را ذخیره می‌کنند — با یک لمس گفتگوی تازه بساز.</string>
+    <string name="assistant_editor_title">دستیار</string>
+    <string name="assistant_name_hint">نام دستیار</string>
+    <string name="assistant_prompt_hint">پرامپت سیستم</string>
+    <string name="assistant_prompt_helper">رفتار، لحن و قواعد را توصیف کن.</string>
+    <string name="assistant_pick_emoji">انتخاب نشان</string>
+    <string name="assistant_provider">ارائه‌دهنده</string>
+    <string name="assistant_model">مدل</string>
+    <string name="assistant_temperature">دما</string>
+    <string name="assistant_max_tokens">حداکثر توکن</string>
+    <string name="assistant_any_provider">ارائه‌دهندهٔ پیش‌فرض</string>
+    <string name="assistant_any_model">مدل پیش‌فرض</string>
+    <string name="assistant_saved">دستیار ذخیره شد</string>
+    <string name="assistant_deleted">دستیار حذف شد</string>
+    <string name="assistant_delete_confirm">«%1$s» حذف شود؟ گفتگوهای ساخته‌شده با آن باقی می‌مانند.</string>
+    <string name="assistant_duplicate">تکثیر</string>
+    <string name="assistant_start_chat">شروع گفتگو</string>
+    <string name="assistant_needs_model">پیش از شروع گفتگو، ارائه‌دهنده و مدل را انتخاب کن.</string>
+    <string name="assistant_bundled_general">دستیار عمومی</string>
+    <string name="assistant_bundled_general_prompt">تو یک دستیار دوستانه و مختصری؛ پاسخ‌ها را شفاف می‌دهی و هنگام مبهم‌بودن درخواست، سؤال می‌پرسی.</string>
+    <string name="assistant_bundled_coder">دستیار برنامه‌نویسی</string>
+    <string name="assistant_bundled_coder_prompt">تو یک مهندس نرم‌افزار باتجربه‌ای. کدهای درست و آمادهٔ production با توضیح کوتاه می‌دهی. کتابخانهٔ استاندارد را ترجیح می‌دهی و حالت‌های مرزی را گوش می‌دهی.</string>
+    <string name="assistant_bundled_translator">مترجم</string>
+    <string name="assistant_bundled_translator_prompt">تو یک مترجم حرفه‌ای‌ای. رسالت، لحن و معنا را حفظ می‌کنی و عبارت‌های مبهم را با گزینه‌های جایگزین می‌آوری.</string>
+    <string name="assistant_bundled_researcher">دستیار پژوهش</string>
+    <string name="assistant_bundled_researcher_prompt">تو یک دستیار پژوهش دقیقی‌ای. پاسخ‌ها را ساختاربندی می‌کنی، فرضیات را صریح می‌کنی و واقعیت را از speculation تفکیک می‌کنی.</string>
+
+    <!-- ══════════ Settings ══════════ -->
+    <string name="settings_title">تنظیمات</string>
+    <string name="settings_general">عمومی</string>
+    <string name="settings_language">زبان</string>
+    <string name="settings_language_system">پیش‌فرض سیستم</string>
+    <string name="settings_language_change_note">هم‌زمان در کل برنامه اعمال می‌شود.</string>
+    <string name="settings_theme">پوسته</string>
+    <string name="settings_theme_system">مطابق سیستم</string>
+    <string name="settings_theme_light">روشن</string>
+    <string name="settings_theme_dark">تیره</string>
+    <string name="settings_dynamic_color">رنگ‌های پویا</string>
+    <string name="settings_dynamic_color_hint">استفاده از رنگ‌های Material You بر پایهٔ کاغذدیواری (اندروید ۱۲ به بعد).</string>
+    <string name="settings_defaults">پیش‌فرض‌های گفتگو</string>
+    <string name="settings_default_provider">ارائه‌دهندهٔ پیش‌فرض</string>
+    <string name="settings_default_model">مدل پیش‌فرض</string>
+    <string name="settings_default_system_prompt">پرامپت سیستمی پیش‌فرض</string>
+    <string name="settings_default_system_prompt_hint">برای گفتگوهایی که پرامپت اختصاصی ندارند ارسال می‌شود.</string>
+    <string name="settings_default_streaming">پاسخ‌ها به‌صورت استریم</string>
+    <string name="settings_default_temperature">دمای پیش‌فرض</string>
+    <string name="settings_default_max_tokens">حداکثر توکنِ پیش‌فرض</string>
+    <string name="settings_chat_display">نمایش گفتگو</string>
+    <string name="settings_markdown">نمایش Markdown</string>
+    <string name="settings_markdown_hint">سرتیترها، فهرست‌ها، کد و جدول‌ها در پیام‌های دستیار رندر می‌شوند.</string>
+    <string name="settings_code_highlighting">رنگ‌آمیزی نحوی</string>
+    <string name="settings_code_highlighting_hint">کلیدواژه و رشته‌ها در بلوک‌های کد رنگی می‌شوند.</string>
+    <string name="settings_auto_scroll">پیمایش خودکار در حین تولید</string>
+    <string name="settings_behavior">رفتار</string>
+    <string name="settings_enter_sends">کلید Enter پیام را می‌فرستد</string>
+    <string name="settings_enter_sends_hint">برای صفحه‌کلیدهای سخت‌افزاری؛ روی کیبورد لمسی اثر ندارد.</string>
+    <string name="settings_data">داده و حریم خصوصی</string>
+    <string name="settings_privacy_note">سخن یک کلاینت است: گفتگوها و کلید فقط روی همین دستگاه می‌مانند. پیام‌ها مستقیماً به ارائه‌دهندهٔ تنظیم‌شده می‌روند. چیزی به ما نرسد.</string>
+    <string name="settings_export_data">خروجی داده‌ها (JSON)</string>
+    <string name="settings_import_data">ورود داده‌ها (JSON)</string>
+    <string name="settings_export_import_hint">پشتیبان از گفتگوها، دستیارها و ارائه‌دهنده‌ها. کلیدهای API مگر انتخابی جدا نباشد، خارج می‌شوند.</string>
+    <string name="settings_export_include_keys">کلیدهای API هم در خروجی باشند (متن ساده، با احتیاط!)</string>
+    <string name="settings_export_created">خروجی ساخته شد — مکان ذخیره را انتخاب کن</string>
+    <string name="settings_export_done">خروجی ذخیره شد</string>
+    <string name="settings_import_done">درون‌ریزی شد: %1$d گفت‌وگوی جدید / %2$d ادغام‌شده · %3$d/%4$d دستیار · %5$d/%6$d ارائه‌دهنده.</string>
+    <string name="settings_import_conversations">%1$d گفتگو</string>
+    <string name="settings_import_assistants">%1$d دستیار</string>
+    <string name="settings_import_providers">%1$d ارائه‌دهنده</string>
+    <string name="settings_import_failed">ورود ناموفق بود — فایل معتبرِ پشتیبانِ سخن نیست.</string>
+    <string name="settings_clear_data">پاک‌کردن همهٔ داده‌های محلی</string>
+    <string name="settings_clear_data_warn">همهٔ گفتگوها، دستیارها و ارائه‌دهنده‌های این دستگاه پاک می‌شوند. اگر پشتیبان می‌خواهی، اول خروجی بگیر.</string>
+    <string name="settings_clear_confirm">همه‌چیز پاک شود؟ بازگشت‌پذیر نیست.</string>
+    <string name="settings_cleared">داده‌های محلی پاک شدند</string>
+    <string name="settings_about">دربارهٔ برنامه</string>
+    <string name="settings_about_body">سخن یک کلاینت آزاد و متن‌باز برای چت هوش مصنوعی است: کلید API خودت را بیاور، آزادانه بین ارائه‌دهنده‌ها برو، همه‌چیز محلی بماند. ساخته‌شده با Kotlin، Jetpack Compose و Material 3.</string>
+    <string name="settings_source_code">مرجع کد</string>
+    <string name="settings_licenses">مجوزهای متن‌باز</string>
+    <string name="settings_licenses_title">مجوزهای متن‌باز</string>
+    <string name="settings_version">نسخهٔ %1$s</string>
+    <string name="settings_check_models">فهرست ارائه‌دهنده‌ها</string>
+
+    <!-- Licenses screen -->
+    <string name="license_note">فهرست زیر پوشش‌دهندهٔ وابستگی‌های مستقیم سخن است. هر پروژه ابتدایی مجوز خودش با نام مشخص‌شده دارد.</string>
+    <string name="license_type_apache">مجوز Apache 2.0</string>
+    <string name="license_type_mit">مجوز MIT</string>
+
+    <!-- ══════════ Errors ══════════ -->
+    <string name="error_auth">API کلید را نپذیرفت. بسنج که کلید API با این ارائه‌دهنده هم‌خوانی دارد و دوباره تلاش کن.</string>
+    <string name="error_rate_limit">ارائه‌دهنده درخواست‌هایت را نرخ‌محدود کرده. کمی صبر کن و دوباره تلاش.</string>
+    <string name="error_model_not_found">مدل «%1$s» در این ارائه‌دهنده پیدا نشد. مدل‌ها را به‌روز کن یا مدل دیگری انتخاب کن.</string>
+    <string name="error_not_found">نقطهٔ اتصال پیدا نشد. آدرس پایه را بررسی کن — معمولاً با /v1 تمام می‌شود.</string>
+    <string name="error_offline">به اینترنت وصل نیستی. خواندن پیام‌ها مشکلی ندارد؛ اما ارسال به اینترنت نیاز دارد.</string>
+    <string name="error_timeout">ارائه‌دهنده دیر جواب داد. دوباره تلاش کن یا max tokens را پایین بیاور.</string>
+    <string name="error_unreachable">دسترسی به ارائه‌دهنده ممکن نشد. آدرس پایه و اینترنت را بررسی کن.</string>
+    <string name="error_malformed">پاسخ قابل تفسیر نبود. دوباره تولید کن، مدل دیگری امتحان کن یا وضعیت ارائه‌دهنده را بسنج.</string>
+    <string name="error_server_generic">ارائه‌دهنده خطای سرور برگرداند. بعداً دوباره تلاش کن یا صفحهٔ وضعیتش را ببین.</string>
+    <string name="error_unknown">اتفاقی نامناسب رخ داد.</string>
+    <string name="error_invalid_url">آدرس پایه ذخیره‌شده نامعتبر است — تنظیمات ← ارائه‌دهنده‌ها را بازش کن.</string>
+    <string name="error_missing_key">این ارائه‌دهنده هنوز کلید API ذخیره‌شده ندارد. تنظیماتش را باز کن و کلید اضافه کن.</string>
+    <string name="error_capability_vision">مدل «%1$s» نمی‌پذیرد تصویر بفرستد. مدلی با بینایی انتخاب کن یا عکس‌ها را پاک کن.</string>
+    <string name="error_capability_pdf">مدل «%1$s» نمی‌پذیرد PDF بفرستد. PDF را حذف کن یا مدل را عوض کن و دوباره تلاش.</string>
+    <string name="error_empty_response">مدل پاسخی برنگرداند. دوباره تولید کن یا پرامپت را تنظیم کن.</string>
+    <string name="error_cancelled">تولید متوقف شد.</string>
+    <string name="error_hint_retry">برای تلاش دوباره لمس کن</string>
+
+    <!-- ══════════ Export / Import ══════════ -->
+    <string name="export_share_title">هم‌رسانی با…</string>
+    <string name="export_file_default">sokhan-export-%1$s.json</string>
+    <string name="export_markdown_failed">خروجی ناموفق بود — نوشتن فایل ممکن نشد.</string>
+    <string name="import_new">تازه: افزوده شد</string>
+    <string name="import_merged">موجود: ادغام شد</string>
+
+    <!-- Accessibility -->
+    <string name="a11y_delete_attachment">حذف پیوست</string>
+    <string name="a11y_send_message">ارسال پیام</string>
+    <string name="a11y_stop_generation">توقف تولید</string>
+    <string name="a11y_attach_menu">افزودن پیوست</string>
+    <string name="a11y_open_drawer">باز کشوی ناوبری</string>
+    <string name="a11y_pin_conversation">سنجاق گفتگو</string>
+    <string name="a11y_archive_conversation">بایگانی گفتگو</string>
+    <string name="a11y_rename_chats">تغییر نام گفتگو</string>
+    <string name="a11y_delete_conversation">حذف گفتگو</string>
+    <string name="a11y_message_actions">کنش‌های پیام</string>
+    <string name="a11y_streaming_cursor">در حال نوشتن</string>
+
+    <!-- Misc -->
+    <string name="usage_label_prompt">ورودی %1$d</string>
+    <string name="usage_label_completion">خروجی %1$d</string>
+    <string name="usage_label_total">~%1$d توکن</string>
+    <string name="messages_count">%1$d پیام</string>
+    <string name="time_today">امروز</string>
+    <string name="time_yesterday">دیروز</string>
+    <string name="update_hint_read_only">فقط خواندنی — از آیکون مداد ویرایش کن.</string>
+</resources>

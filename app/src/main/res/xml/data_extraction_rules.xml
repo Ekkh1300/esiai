@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Device-to-device / cloud data-extraction rules (Android 12+).
+  Excludes the Keystore-encrypted API key store for the same reason as
+  backup_rules.xml: the encryption key cannot be transferred.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="secure_store.bin" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="secure_store.bin" />
+    </device-transfer>
+</data-extraction-rules>

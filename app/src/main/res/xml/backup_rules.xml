@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Full backup policy for Sokhan ("Sokhan").
+  Conversations/chats and settings are backed up; provider API key ciphertext
+  is EXCLUDED because Keystore keys are non-exportable — restoring it on a
+  new device would produce useless, undecryptable blobs.
+-->
+<full-backup-content>
+    <exclude domain="file" path="secure_store.bin" />
+</full-backup-content>

@@ -1,0 +1,39 @@
+# Changelog
+
+All notable changes to Sokhan are documented here. Format based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- (nothing yet)
+
+## [0.1.0] — 2026-10-21
+
+First public release.
+
+### Added
+
+- OpenAI-compatible providers: create/edit/duplicate connections with base URL, optional api
+  version + custom headers, capability flags, generation-parameter defaults, and a stepwise
+  connection tester (reach → auth → models → chat) with model discovery.
+- Streaming chat (`/chat/completions` SSE) with delta / reasoning / usage events, content
+  persisted to Room while streaming (Room as the single source of truth), stop, retry, regenerate
+  and edit-and-resend; orphan sweep after process death.
+- Conversations: pin, archive, search, rename, per-conversation provider/model/system-prompt/
+  temperature/topP/maxTokens overrides, frozen model labels for history accuracy.
+- Assistants: built-in starter personas plus a full editor (emoji, prompt, model, params).
+- Attachments: images (gallery/camera), text files and PDFs gated by provider capability flags,
+  with graceful degradation for unsupported models.
+- Markdown rendering in Compose (headings, emphasis, links, inline/fenced code with syntax
+  highlighting, block quotes, GFM tables) and message actions: copy, share, edit, delete.
+- Dual-language UI: English and Persian (فارسی) with complete RTL and in-app language switching
+  without an activity restart.
+- Security: Android Keystore–wrapped AES-GCM key storage; keys never stored in Room or logs;
+  masked display in the UI; SECURITY.md documents the BYOK threat model.
+- Data portability: schema-versioned JSON backup (explicit opt-in for including keys) with merge
+  import counts, plus Markdown export/share of conversations.
+- Tests: a JVM unit suite (MockWebServer provider tests, backup/exports, ids/token estimator,
+  error-kind mapping) and an instrumented Room DAO suite; GitHub Actions CI workflow.

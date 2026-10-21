@@ -1,0 +1,56 @@
+name: Bug report
+about: Report a problem with Sokhan
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! Please **redact API keys** from logs and
+        screenshots — Sokhan never logs them, and neither should you.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, what you expected, and what actually happened.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Chat / streaming
+        - Providers + connection test
+        - Assistants
+        - Attachments
+        - Markdown rendering
+        - Backup / export
+        - Language / RTL
+        - Build toolchain
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Sokhan version / commit
+      placeholder: 0.1.0 or git short SHA
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device & Android version
+      placeholder: e.g. Pixel 7, Android 15
+    validations:
+      required: true
+  - type: dropdown
+    id: lang
+    attributes:
+      label: App language
+      options:
+        - English
+        - Persian
+        - Both
+    validations:
+      required: true

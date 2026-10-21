@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- New chat: camera images are staged under a private directory. -->
+    <cache-path name="camera_images" path="camera/" />
+    <!-- Shared/exported conversations (Markdown exports). -->
+    <files-path name="exports" path="exports/" />
+</paths>

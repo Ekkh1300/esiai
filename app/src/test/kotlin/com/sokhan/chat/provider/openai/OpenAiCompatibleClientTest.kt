@@ -1,0 +1,241 @@
+package com.sokhan.chat.provider.openai
+
+import com.sokhan.chat.domain.model.ChatError
+import com.sokhan.chat.domain.model.ProviderConfig
+import com.sokhan.chat.provider.ChatMessage
+import com.sokhan.chat.provider.ChatMessageRole
+import com.sokhan.chat.provider.ChatPayload
+import com.sokhan.chat.provider.ChatStreamEvent
+import com.sokhan.chat.provider.ProviderContext
+import com.sokhan.chat.provider.UsageInfo
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.Dispatcher
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+class OpenAiCompatibleClientTest {
+
+    private lateinit var server: MockWebServer
+    private lateinit var client: OpenAiCompatibleClient
+
+    private val config
+        get() = ProviderConfig(
+            id = "p1",
+            name = "Test",
+            baseUrl = server.url("/v1").toString(),
+            defaultModelId = "gpt-test"
+        )
+
+    private fun context(apiKey: String? = "sk-test") = ProviderContext(config, apiKey)
+
+    @Before
+    fun setUp() {
+        server = MockWebServer()
+        server.start()
+        client = OpenAiCompatibleClient(okhttp3.OkHttpClient())
+    }
+
+    @After
+    fun tearDown() {
+        server.shutdown()
+    }
+
+    // ── listModels ───────────────────────────────────────────────────────
+
+    @Test
+    fun `listModels parses the data array`() = runTest {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"object":"list","data":[{"id":"m-a","owned_by":"o","created":5},{"id":"m-b"}]}""")
+        )
+        val result = client.listModels(context())
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("m-a", "m-b"), result.getOrThrow().map { it.id })
+        val request = server.takeRequest()
+        assertEquals("/v1/models", request.path)
+        assertEquals("Bearer sk-test", request.getHeader("Authorization"))
+    }
+
+    @Test
+    fun `listModels maps 401 to an auth error with the provider detail`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(401)
+                .setBody("""{"error":{"message":"Incorrect API key"}}""")
+        )
+        val result = client.listModels(context())
+        assertTrue(result.isFailure)
+        val error = result.exceptionOrNull()
+        assertTrue(error is ChatError.Auth)
+        assertEquals("Incorrect API key", (error as ChatError.Auth).detail)
+    }
+
+    // ── testConnection ───────────────────────────────────────────────────
+
+    @Test
+    fun `testConnection reports all steps on success`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200)
+                .setBody("""{"data":[{"id":"m-a"},{"id":"m-b"}]}""")
+        )
+        val result = client.testConnection(context())
+        assertEquals(emptyList<String>(), result.steps.filter { !it.passed }.map { it.stepKey })
+        assertEquals(2, result.models.size)
+        assertEquals(null, result.failure)
+    }
+
+    @Test
+    fun `testConnection reports auth failure on credentials rejection`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(401)
+                .setBody("""{"error":{"message":"Incorrect API key"}}""")
+        )
+        val result = client.testConnection(context())
+        assertTrue(result.steps.first { it.stepKey == "auth" }.passed.not())
+        assertTrue(result.failure is ChatError.Auth)
+        // The reach step still passed: the server answered.
+        assertTrue(result.steps.first { it.stepKey == "reach" }.passed)
+    }
+
+    @Test
+    fun `testConnection probes chat when the models endpoint rejects`() = runTest {
+        server.dispatcher = object : Dispatcher() {
+            override fun dispatch(request: okhttp3.mockwebserver.RecordedRequest): MockResponse =
+                if (request.path!!.endsWith("/models")) {
+                    MockResponse().setResponseCode(500).setBody("""{"error":"no models"}""")
+                } else if (request.path!!.endsWith("/chat/completions")) {
+                    MockResponse().setResponseCode(401).setBody("""{"error":{"message":"bad auth"}}""")
+                } else {
+                    MockResponse().setResponseCode(404)
+                }
+        }
+        val result = client.testConnection(context())
+        assertTrue(result.steps.first { it.stepKey == "models" }.passed.not())
+        assertTrue(result.steps.first { it.stepKey == "auth" }.passed.not())
+        assertTrue(result.failure is ChatError.Auth)
+    }
+
+    // ── Streaming chat ───────────────────────────────────────────────────
+
+    private fun sseBody(vararg events: String): String =
+        events.joinToString("\n\n") { it } + "\n\n"
+
+    private val samplePayload = ChatPayload(
+        model = "gpt-test",
+        messages = listOf(ChatMessage(ChatMessageRole.USER, text = "hello")),
+        stream = true
+    )
+
+    @Test
+    fun `streaming emits deltas in order and finishes`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"Hel"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{"content":"lo"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(samplePayload, context()).toList().map { it.getOrThrow() }
+        assertEquals(
+            listOf(
+                ChatStreamEvent.Delta("Hel"),
+                ChatStreamEvent.Delta("lo"),
+                ChatStreamEvent.Finished("stop")
+            ),
+            events
+        )
+        val request = server.takeRequest()
+        assertEquals("/v1/chat/completions", request.path)
+        assertEquals("Bearer sk-test", request.getHeader("Authorization"))
+        assertTrue(request.body.readUtf8().contains("\"stream\":true"))
+    }
+
+    @Test
+    fun `streaming forwards usage frames when present`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"Hi"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{}}],"usage":{"prompt_tokens":1,"completion_tokens":2,"total_tokens":3}}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(samplePayload, context()).toList().map { it.getOrThrow() }
+        val usage = events.filterIsInstance<ChatStreamEvent.Usage>().single()
+        assertEquals(UsageInfo(promptTokens = 1, completionTokens = 2, totalTokens = 3), usage.usage)
+    }
+
+    @Test
+    fun `streaming skips unparsable frames`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"ok"}}]}""",
+                    "data: not-json-at-all",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(samplePayload, context()).toList().map { it.getOrThrow() }
+        assertEquals(listOf(ChatStreamEvent.Delta("ok"), ChatStreamEvent.Finished(null)), events)
+    }
+
+    @Test
+    fun `streaming maps http errors onto the taxonomy`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(429)
+                .setBody("""{"error":{"message":"rate limited"}}""")
+        )
+        val results = client.chatPayload(samplePayload, context()).toList()
+        val failures = results.filter { it.isFailure }
+        assertTrue(failures.isNotEmpty())
+        assertTrue(failures.first().exceptionOrNull() is ChatError.RateLimit)
+    }
+
+    @Test
+    fun `empty stream raises EmptyResponse`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(sseBody("data: [DONE]"))
+        )
+        val results = client.chatPayload(samplePayload, context()).toList()
+        val failures = results.filter { it.isFailure }
+        assertTrue(failures.isNotEmpty())
+        assertTrue(failures.first().exceptionOrNull() is ChatError.EmptyResponse)
+    }
+
+    // ── Non-streaming chat ───────────────────────────────────────────────
+
+    @Test
+    fun `non-streaming chat returns one Finished event`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"id":"x","choices":[{"index":0,"message":{"role":"assistant","content":"blue"},"finish_reason":"stop"}],
+                   "usage":{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2},"model":"gpt-test"}"""
+            )
+        )
+        val events = client.chatPayload(samplePayload.copy(stream = false), context()).toList().map { it.getOrThrow() }
+        assertEquals(1, events.size)
+        assertEquals(ChatStreamEvent.Finished("stop"), events.single())
+    }
+
+    @Test
+    fun `non-streaming chat maps non-200 to the taxonomy`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody("""{"error":{"message":"no route"}}""")
+        )
+        val results = client.chatPayload(samplePayload.copy(stream = false), context()).toList()
+        val failures = results.filter { it.isFailure }
+        assertTrue(failures.isNotEmpty())
+        assertTrue(failures.first().exceptionOrNull() is ChatError.NotFound)
+    }
+}

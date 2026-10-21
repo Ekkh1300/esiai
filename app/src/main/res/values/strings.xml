@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sokhan</string>
+    <string name="app_tagline">Bring your own key. Talk to any model.</string>
+
+    <!-- ══════════ Common ══════════ -->
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_done">Done</string>
+    <string name="common_close">Close</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_copied">Copied to clipboard</string>
+    <string name="common_share">Share</string>
+    <string name="common_search">Search</string>
+    <string name="common_back">Back</string>
+    <string name="common_more">More</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_add">Add</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_name">Name</string>
+    <string name="common_optional">Optional</string>
+    <string name="common_confirm">Confirm</string>
+    <string name="common_apply">Apply</string>
+    <string name="common_enabled">Enabled</string>
+    <string name="common_disabled">Disabled</string>
+    <string name="common_unset">Not set</string>
+    <string name="common_loading">Loading…</string>
+
+    <!-- ══════════ Navigation ══════════ -->
+    <string name="nav_chats">Chats</string>
+    <string name="nav_assistants">Assistants</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- ══════════ Home / Chats list ══════════ -->
+    <string name="chats_title">Chats</string>
+    <string name="chats_search_hint">Search conversations…</string>
+    <string name="chats_new_chip">New chat</string>
+    <string name="chats_empty_title">Nothing here yet</string>
+    <string name="chats_empty_subtitle">Start a conversation, or pick an assistant to give it a role.</string>
+    <string name="chats_empty_no_provider">To talk to a model, first add a provider with your API key.</string>
+    <string name="chats_setup_provider">Add provider</string>
+    <string name="chats_pinned">Pinned</string>
+    <string name="chats_archived">Archived</string>
+    <string name="chats_archive">Archive</string>
+    <string name="chats_unarchive">Unarchive</string>
+    <string name="chats_pin">Pin</string>
+    <string name="chats_unpin">Unpin</string>
+    <string name="chats_rename">Rename</string>
+    <string name="chats_delete_confirm">Delete this conversation? Its messages will be removed permanently.</string>
+    <string name="chats_filter_all">All</string>
+    <string name="chats_filter_pinned">Pinned</string>
+    <string name="chats_filter_archived">Archived</string>
+    <string name="chats_results_count">%1$d results</string>
+    <string name="chats_no_results">No conversations match your search.</string>
+    <string name="chats_draft_title">New chat</string>
+    <string name="action_new_chat">New chat</string>
+    <string name="chats_empty_archived">No archived conversations.</string>
+    <string name="chats_needs_provider_hint">Pick a service and paste your key — it stays on this device.</string>
+    <string name="chats_preview_empty">No messages yet.</string>
+    <string name="a11y_toggle_archived">Show or hide archived chats</string>
+
+    <!-- ══════════ Chat screen ══════════ -->
+    <string name="chat_untitled">Untitled chat</string>
+    <string name="chat_input_hint">Message</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_send_describe">Send message</string>
+    <string name="chat_stop">Stop generating</string>
+    <string name="chat_generating">Generating…</string>
+    <string name="chat_thinking">Thinking</string>
+    <string name="chat_reasoning">Reasoning</string>
+    <string name="chat_reasoning_show">Show reasoning</string>
+    <string name="chat_reasoning_hide">Hide reasoning</string>
+    <string name="chat_copy_code">Copy code</string>
+    <string name="chat_model_chip_no_model">No model selected</string>
+    <string name="chat_pick_model">Pick a model</string>
+    <string name="chat_need_model">Choose a model to start talking. You can add providers in Settings → Providers.</string>
+    <string name="chat_need_provider">No provider configured yet. Add one to start chatting.</string>
+    <string name="chat_open_providers">Open providers</string>
+    <string name="chat_regenerate">Regenerate</string>
+    <string name="chat_edit_message">Edit</string>
+    <string name="chat_resend">Resend</string>
+    <string name="chat_delete_message">Delete message</string>
+    <string name="chat_delete_message_confirm">Delete this message?</string>
+    <string name="chat_clear">Clear conversation</string>
+    <string name="chat_clear_confirm">Remove all messages from this conversation? This cannot be undone.</string>
+    <string name="chat_export_markdown">Export as Markdown</string>
+    <string name="chat_system_prompt">System prompt</string>
+    <string name="chat_system_prompt_hint">How should the model behave? Leave empty to use the default.</string>
+    <string name="chat_system_prompt_use_default">Use default system prompt</string>
+    <string name="chat_edit_message_with_hint">Edit message</string>
+    <string name="chat_resend_hint">Resend message</string>
+    <string name="chat_conversation_shared">Conversation shared</string>
+    <string name="chat_export_saved">Markdown file saved</string>
+    <string name="chat_scrolled_up">New messages</string>
+    <string name="chat_jump_down">Jump to latest</string>
+
+    <!-- ══════════ Attachments ══════════ -->
+    <string name="attach_image">Photo from gallery</string>
+    <string name="attach_camera">Camera</string>
+    <string name="attach_file">Text or PDF file</string>
+    <string name="attach_remove">Remove attachment</string>
+    <string name="attach_still_processing">Attachment is being prepared…</string>
+    <string name="attach_failed">Attachment failed to load</string>
+    <string name="attach_model_no_vision">This model can\u2019t see images — pick a vision-capable model to send them.</string>
+    <string name="attach_model_no_pdf">This model can\u2019t read PDF files.</string>
+    <string name="attach_size_too_large">This file is too large (%1$s). Limit is %2$s.</string>
+    <string name="attach_size_too_large_hint">That file is too large. Limits: images 25 MB, PDFs 20 MB, text 1 MB.</string>
+    <string name="attach_image_failed_read">Couldn\u2019t read this image.</string>
+
+    <!-- ══════════ Providers ══════════ -->
+    <string name="providers_title">Providers</string>
+    <string name="providers_add_fab">Add provider</string>
+    <string name="providers_empty_title">Bring your own model</string>
+    <string name="providers_empty_subtitle">Add any OpenAI-compatible API — OpenAI, DeepSeek, OpenRouter, Ollama and hundreds more. Your key stays on this device.</string>
+    <string name="provider_editor_new">New provider</string>
+    <string name="provider_editor_title">Provider</string>
+    <string name="provider_name_hint">Provider name</string>
+    <string name="provider_base_url_hint">Base URL</string>
+    <string name="provider_base_url_helper">OpenAI-compatible endpoint, e.g. https://api.openai.com/v1</string>
+    <string name="provider_api_key_hint">API key</string>
+    <string name="provider_api_key_keep">Keep existing key</string>
+    <string name="provider_api_key_saved">Key stored encrypted · never leaves your device in logs</string>
+    <string name="provider_show_key">Show API key</string>
+    <string name="provider_hide_key">Hide API key</string>
+    <string name="provider_org_hint">Organization (optional)</string>
+    <string name="provider_org_helper">Sent as the OpenAI-Organization header.</string>
+    <string name="provider_api_version_hint">API version (optional)</string>
+    <string name="provider_api_version_helper">Appended as ?api-version= for Azure-style endpoints.</string>
+    <string name="provider_default_model">Default model</string>
+    <string name="provider_default_model_helper">Prefilled for new chats on this provider.</string>
+    <string name="provider_streaming">Streaming responses</string>
+    <string name="provider_include_usage">Ask for usage stats on streams (stream_options)</string>
+    <string name="provider_param_temperature">Temperature</string>
+    <string name="provider_param_max_tokens">Max tokens</string>
+    <string name="provider_param_top_p">Top-P</string>
+    <string name="provider_param_frequency">Frequency penalty</string>
+    <string name="provider_param_presence">Presence penalty</string>
+    <string name="provider_params_helper">Leave a field empty to use the provider\u2019s default. Values apply to new chats.</string>
+    <string name="provider_headers_title">Custom headers</string>
+    <string name="provider_headers_helper">Sent with every request to this provider.</string>
+    <string name="provider_header_key">Header name</string>
+    <string name="provider_header_value">Header value</string>
+    <string name="provider_capacity_title">Capabilities</string>
+    <string name="provider_cap_text_files">Text files</string>
+    <string name="provider_cap_pdf">PDF input</string>
+    <string name="provider_cap_vision">Images (vision)</string>
+    <string name="provider_cap_models_list">List-models endpoint</string>
+    <string name="provider_capacity_helper">Turn a capability off when this provider rejects that feature, so Sokhan won\u2019t offer it.</string>
+    <string name="provider_test">Test connection</string>
+    <string name="provider_testing">Testing connection…</string>
+    <string name="provider_test_title">Connection test</string>
+    <string name="provider_test_ok">Connected</string>
+    <string name="provider_test_fail">Test failed</string>
+    <string name="provider_test_step_base">Reach endpoint</string>
+    <string name="provider_test_step_auth">API key accepted</string>
+    <string name="provider_test_step_models">Model list fetched (%1$d)</string>
+    <string name="provider_test_step_models_without_key">Model list fetched without key (%1$d)</string>
+    <string name="provider_test_models_skip">Model list unavailable — you can still add models manually.</string>
+    <string name="provider_refresh_models">Refresh models</string>
+    <string name="provider_refresh_models_ok">Refreshed %1$d models</string>
+    <string name="provider_duplicate">Duplicate</string>
+    <string name="provider_duplicated">Provider copied</string>
+    <string name="provider_set_active">Set as default</string>
+    <string name="provider_active">Default provider</string>
+    <string name="provider_active_chip">Default</string>
+    <string name="provider_saved">Provider saved</string>
+    <string name="provider_deleted">Provider deleted</string>
+    <string name="provider_delete_confirm">Delete “%1$s”? Chats keep working with other providers; its API key will be erased from this device.</string>
+    <string name="provider_error_name">A name is required.</string>
+    <string name="provider_error_url">Enter a valid http(s) base URL, e.g. https://api.openai.com/v1</string>
+    <string name="provider_error_key">Enter an API key to test the connection.</string>
+    <string name="provider_no_models_hint">No models yet — refresh from the API or add manually.</string>
+    <string name="provider_openai_styled_note">Anything following the OpenAI Chat Completions schema works out of the box.</string>
+
+    <!-- quick presets shown when adding a provider -->
+    <string name="provider_preset_title">Quick setup</string>
+    <string name="provider_preset_helper">Starter base URLs; keys are never prefilled.</string>
+
+    <!-- ══════════ Models ══════════ -->
+    <string name="models_title">Models</string>
+    <string name="models_search_hint">Filter models…</string>
+    <string name="models_refresh">Refresh from API</string>
+    <string name="models_refreshed">Fetched %1$d models from the API</string>
+    <string name="models_add_manual">Add model manually</string>
+    <string name="models_manual_title">New model</string>
+    <string name="models_manual_id">Model ID</string>
+    <string name="models_manual_id_helper">Exactly what the API expects, e.g. gpt-4o-mini</string>
+    <string name="models_manual_name">Display name (optional)</string>
+    <string name="models_manual_context">Context length (tokens, optional)</string>
+    <string name="models_empty">No models yet</string>
+    <string name="models_empty_hint">Use Refresh to pull the provider\u2019s list, or add one manually.</string>
+    <string name="models_hidden">Hidden</string>
+    <string name="models_show">Show</string>
+    <string name="models_delete_manual">Remove manual model</string>
+    <string name="models_refresh_failed">Couldn\u2019t fetch models — check the endpoint and key, or add models manually.</string>
+    <string name="models_can_edit_caps">Tap a model to edit its capabilities.</string>
+    <string name="models_vision">Vision</string>
+    <string name="models_streaming">Streaming</string>
+    <string name="models_tools">Tools</string>
+    <string name="models_reasoning">Reasoning</string>
+    <string name="models_files">Files</string>
+    <string name="models_pdf">PDF</string>
+
+    <!-- ══════════ Assistants ══════════ -->
+    <string name="assistants_title">Assistants</string>
+    <string name="assistants_add_fab">New assistant</string>
+    <string name="assistants_empty_title">Give your chats a persona</string>
+    <string name="assistants_empty_subtitle">Assistants store a system prompt, model and parameters — start a new chat with one tap.</string>
+    <string name="assistant_editor_title">Assistant</string>
+    <string name="assistant_name_hint">Assistant name</string>
+    <string name="assistant_prompt_hint">System prompt</string>
+    <string name="assistant_prompt_helper">Describe behaviour, tone and rules.</string>
+    <string name="assistant_pick_emoji">Pick an icon</string>
+    <string name="assistant_provider">Provider</string>
+    <string name="assistant_model">Model</string>
+    <string name="assistant_temperature">Temperature</string>
+    <string name="assistant_max_tokens">Max tokens</string>
+    <string name="assistant_any_provider">Default provider</string>
+    <string name="assistant_any_model">Default model</string>
+    <string name="assistant_saved">Assistant saved</string>
+    <string name="assistant_deleted">Assistant deleted</string>
+    <string name="assistant_delete_confirm">Delete “%1$s”? Chats created with it are kept.</string>
+    <string name="assistant_duplicate">Duplicate</string>
+    <string name="assistant_start_chat">Start chat</string>
+    <string name="assistant_needs_model">Pick a provider and model before starting a chat.</string>
+    <string name="assistant_bundled_general">General Assistant</string>
+    <string name="assistant_bundled_general_prompt">You are a friendly, concise assistant who answers clearly and asks for clarification when a request is ambiguous.</string>
+    <string name="assistant_bundled_coder">Coding Assistant</string>
+    <string name="assistant_bundled_coder_prompt">You are a senior software engineer. Give correct, production-quality code with brief explanations. Prefer standard libraries, and call out edge cases.</string>
+    <string name="assistant_bundled_translator">Translator</string>
+    <string name="assistant_bundled_translator_prompt">You are a professional translator. Translate faithfully, preserving tone, format and meaning. If a phrase is ambiguous, offer alternatives.</string>
+    <string name="assistant_bundled_researcher">Research Assistant</string>
+    <string name="assistant_bundled_researcher_prompt">You are a meticulous research assistant. Structure answers, cite assumptions, and clearly separate facts from speculation.</string>
+
+    <!-- ══════════ Settings ══════════ -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_general">General</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_change_note">Applies immediately across the app.</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color">Dynamic colors</string>
+    <string name="settings_dynamic_color_hint">Use wallpaper-based Material You colors (Android 12+).</string>
+    <string name="settings_defaults">Chat defaults</string>
+    <string name="settings_default_provider">Default provider</string>
+    <string name="settings_default_model">Default model</string>
+    <string name="settings_default_system_prompt">Default system prompt</string>
+    <string name="settings_default_system_prompt_hint">Sent with chats that don\u2019t define their own.</string>
+    <string name="settings_default_streaming">Stream responses by default</string>
+    <string name="settings_default_temperature">Default temperature</string>
+    <string name="settings_default_max_tokens">Default max tokens</string>
+    <string name="settings_chat_display">Chat display</string>
+    <string name="settings_markdown">Render Markdown</string>
+    <string name="settings_markdown_hint">Headings, lists, code and tables inside assistant messages.</string>
+    <string name="settings_code_highlighting">Syntax highlighting</string>
+    <string name="settings_code_highlighting_hint">Color keywords and strings in code blocks.</string>
+    <string name="settings_auto_scroll">Auto-scroll while generating</string>
+    <string name="settings_behavior">Behaviour</string>
+    <string name="settings_enter_sends">Enter key sends the message</string>
+    <string name="settings_enter_sends_hint">For hardware keyboards; touch keys are unaffected.</string>
+    <string name="settings_data">Data &amp; privacy</string>
+    <string name="settings_privacy_note">Sokhan is a client: chats and keys live on this device only. Messages are sent directly to the provider you configure. Nothing is sent to us.</string>
+    <string name="settings_export_data">Export data (JSON)</string>
+    <string name="settings_import_data">Import data (JSON)</string>
+    <string name="settings_export_import_hint">Backs up conversations, assistants and providers. API keys are excluded unless you choose otherwise.</string>
+    <string name="settings_export_include_keys">Include API keys in export (plain cards, use carefully!)</string>
+    <string name="settings_export_created">Export created — choose where to save it</string>
+    <string name="settings_export_done">Export saved</string>
+    <string name="settings_import_done">Imported: %1$d new / %2$d merged conversations · %3$d/%4$d assistants · %5$d/%6$d providers.</string>
+    <string name="settings_import_conversations">%1$d conversations</string>
+    <string name="settings_import_assistants">%1$d assistants</string>
+    <string name="settings_import_providers">%1$d providers</string>
+    <string name="settings_import_failed">Import failed — the file isn\u2019t a valid Sokhan backup.</string>
+    <string name="settings_clear_data">Clear all local data</string>
+    <string name="settings_clear_data_warn">Deletes every conversation, assistant and provider on this device. Export first if you need a backup.</string>
+    <string name="settings_clear_confirm">Erase everything? This cannot be undone.</string>
+    <string name="settings_cleared">Local data cleared</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_body">Sokhan is a free, open-source AI chat client: bring your own API key, switch providers freely, keep everything local. Built with Kotlin, Jetpack Compose and Material 3.</string>
+    <string name="settings_source_code">Source code</string>
+    <string name="settings_licenses">Open-source licenses</string>
+    <string name="settings_licenses_title">Open-source licenses</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_check_models">Open provider list</string>
+
+    <!-- Licenses screen -->
+    <string name="license_note">The list below covers Sokhan\u2019s direct dependencies. Each project keeps its own license under the name shown.</string>
+    <string name="license_type_apache">Apache License 2.0</string>
+    <string name="license_type_mit">MIT License</string>
+
+    <!-- ══════════ Errors ══════════ -->
+    <string name="error_auth">The API rejected the key. Check that the API key matches this provider and try again.</string>
+    <string name="error_rate_limit">The provider is rate-limiting you. Wait a little and retry.</string>
+    <string name="error_model_not_found">The model “%1$s” wasn\u2019t found on this provider. Refresh models or pick another.</string>
+    <string name="error_not_found">The endpoint wasn\u2019t found. Check the base URL — it usually ends with /v1.</string>
+    <string name="error_offline">You\u2019re offline. Messages still read fine; sending needs a connection though.</string>
+    <string name="error_timeout">The provider took too long to respond. Retry, or lower max tokens.</string>
+    <string name="error_unreachable">Couldn\u2019t reach the provider. Check base URL and internet connection.</string>
+    <string name="error_malformed">The response couldn\u2019t be parsed. Try again, switch models, or check the provider\u2019s status page.</string>
+    <string name="error_server_generic">The provider returned a server error. Try again in a moment or check its status page.</string>
+    <string name="error_unknown">Something went wrong.</string>
+    <string name="error_invalid_url">The saved base URL is invalid — open Settings → Providers to fix it.</string>
+    <string name="error_missing_key">This provider has no API key saved yet. Open its settings and add one.</string>
+    <string name="error_capability_vision">“%1$s” doesn\u2019t accept images. Pick a vision-capable model or remove the photos.</string>
+    <string name="error_capability_pdf">“%1$s” doesn\u2019t accept PDFs. Remove the PDF and retry, or switch models.</string>
+    <string name="error_empty_response">The model returned an empty response. Try again or adjust the prompt.</string>
+    <string name="error_cancelled">Generation stopped.</string>
+    <string name="error_hint_retry">Tap to retry</string>
+
+    <!-- ══════════ Export / Import ══════════ -->
+    <string name="export_share_title">Share with…</string>
+    <string name="export_file_default">sokhan-export-%1$s.json</string>
+    <string name="export_markdown_failed">Export failed — couldn\u2019t write the file.</string>
+    <string name="import_new">New: added</string>
+    <string name="import_merged">Existed: merged</string>
+
+    <!-- Accessibility -->
+    <string name="a11y_delete_attachment">Delete attachment</string>
+    <string name="a11y_send_message">Send message</string>
+    <string name="a11y_stop_generation">Stop generation</string>
+    <string name="a11y_attach_menu">Add attachment</string>
+    <string name="a11y_open_drawer">Open navigation</string>
+    <string name="a11y_pin_conversation">Pin conversation</string>
+    <string name="a11y_archive_conversation">Archive conversation</string>
+    <string name="a11y_rename_chats">Rename conversation</string>
+    <string name="a11y_delete_conversation">Delete conversation</string>
+    <string name="a11y_message_actions">Message actions</string>
+    <string name="a11y_streaming_cursor">Typing</string>
+
+    <!-- Misc -->
+    <string name="usage_label_prompt">in %1$d</string>
+    <string name="usage_label_completion">out %1$d</string>
+    <string name="usage_label_total">~%1$d tok</string>
+    <string name="messages_count">%1$d messages</string>
+    <string name="time_today">Today</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="update_hint_read_only">Read-only — edit via the pencil icon.</string>
+</resources>
