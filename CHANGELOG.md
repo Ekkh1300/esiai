@@ -53,3 +53,7 @@ First public release.
   activity now serves locale-aware resources, so every window follows the in-app language.
 - Backup import keeps attachments (`@Upsert` instead of `REPLACE`), a failed regenerate no longer
   deletes the previous reply, and Keystore writes are atomic (temp file + rename).
+- CI is green again: the Gradle wrapper is committed as executable (the Linux runner could not run
+  it before) and the workflow uses current action versions.
+- New instrumented test walks the whole Koin graph, so a missing dependency definition fails the
+  test run instead of crashing the app on startup.
