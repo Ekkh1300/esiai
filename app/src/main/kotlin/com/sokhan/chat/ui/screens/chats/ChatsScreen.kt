@@ -149,7 +149,11 @@ fun ChatsScreen(
             }
 
             when {
-                !hasProvider -> EmptyState(
+                // Existing conversations stay reachable even when no provider
+                // is configured — hiding the history would make the chats
+                // unreachable. The provider hint is only shown when there is
+                // nothing else to display.
+                !hasProvider && cards.isEmpty() -> EmptyState(
                     icon = Icons.Filled.Forum,
                     title = stringResource(R.string.chats_empty_no_provider),
                     subtitle = stringResource(R.string.chats_needs_provider_hint),

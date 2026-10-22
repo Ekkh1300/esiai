@@ -53,6 +53,13 @@ First public release.
   activity now serves locale-aware resources, so every window follows the in-app language.
 - Backup import keeps attachments (`@Upsert` instead of `REPLACE`), a failed regenerate no longer
   deletes the previous reply, and Keystore writes are atomic (temp file + rename).
+- **Chat list was upside down** — the conversation is rendered bottom-up, so the newest message now
+  sits at the bottom and the oldest at the top.
+- **Conversation history stays reachable** when no provider is configured; the "add a provider"
+  hint only appears when there is nothing else to show.
+- Polish: timestamp and message actions share one compact row, the jump-to-latest button is
+  anchored to the trailing edge instead of floating in the middle, the "clear conversation" icon
+  is a proper sweep icon, and assistant bubbles get a hairline border.
 - CI is green again: the Gradle wrapper is committed as executable (the Linux runner could not run
   it before) and the workflow uses current action versions.
 - New instrumented test walks the whole Koin graph, so a missing dependency definition fails the

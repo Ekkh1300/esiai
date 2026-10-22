@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.AlertDialog
@@ -39,6 +39,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -99,6 +101,11 @@ fun ChatScreen(
     val streaming = streamState.isStreaming(conversationId)
     val lastAssistant = messages.lastOrNull { it.role == MessageRole.ASSISTANT }
 
+    // The list is rendered bottom-up (reverseLayout = true), so item 0 has to
+    // be the NEWEST message. The domain list arrives oldest-first, therefore
+    // it is reversed here — otherwise the conversation reads upside down.
+    val orderedMessages = remember(messages) { messages.asReversed() }
+
     val showJumpDown by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
@@ -128,7 +135,8 @@ fun ChatScreen(
     }
 
     // Auto-scroll: in a reversed list the newest message is index 0.
-    LaunchedEffect(messages.size, messages.firstOrNull()?.content?.length) {
+    val newestMessage = messages.lastOrNull()
+    LaunchedEffect(messages.size, newestMessage?.id, newestMessage?.content?.length) {
         if (messages.isNotEmpty()) listState.animateScrollToItem(0)
     }
 
@@ -173,7 +181,7 @@ fun ChatScreen(
                     }
                     IconButton(onClick = { clearDialog = true }) {
                         Icon(
-                            Icons.Filled.CleaningServices,
+                            Icons.Filled.DeleteSweep,
                             contentDescription = stringResource(R.string.chat_clear)
                         )
                     }
@@ -251,7 +259,7 @@ fun ChatScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         reverseLayout = true
                     ) {
-                        items(messages, key = { it.id }) { message ->
+                        items(orderedMessages, key = { it.id }) { message ->
                             val isStreaming = streaming &&
                                 message.id == lastAssistant?.id &&
                                 message.status == MessageStatus.STREAMING
@@ -283,11 +291,15 @@ fun ChatScreen(
                         }
                     }
                     if (showJumpDown) {
+                        // Anchored to the trailing edge (right in LTR, left in
+                        // RTL) so it never floats over the middle of the
+                        // conversation.
                         FilledTonalIconButton(
                             onClick = { listScope.launch { listState.animateScrollToItem(0) } },
                             modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 12.dp)
+                                .align(Alignment.BottomEnd)
+                                .padding(end = 16.dp, bottom = 14.dp)
+                                .shadow(6.dp, CircleShape)
                         ) {
                             Icon(
                                 Icons.Filled.ArrowDownward,

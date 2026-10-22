@@ -2,6 +2,7 @@ package com.sokhan.chat.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -124,11 +125,27 @@ fun ChatMessageBubble(
 
         Column(
             modifier = Modifier
+                // Wrap the content (so the bubble hugs its text and the
+                // column alignment decides which side it sits on) but never
+                // grow wider than a comfortable reading column.
                 .widthIn(max = 340.dp)
                 .clip(bubbleShape)
                 .clickable { actionsOpen = !actionsOpen }
                 .background(bubbleColor)
-                .padding(horizontal = 14.dp, vertical = 10.dp)
+                .then(
+                    if (isUser) {
+                        Modifier
+                    } else {
+                        // A hairline keeps the assistant bubble readable on
+                        // top of a busy background.
+                        Modifier.border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            shape = bubbleShape
+                        )
+                    }
+                )
+                .padding(horizontal = 16.dp, vertical = 11.dp)
         ) {
             if (!isUser && !message.reasoning.isNullOrBlank()) {
                 ReasoningBlock(message.reasoning)
@@ -184,21 +201,27 @@ fun ChatMessageBubble(
             }
         }
 
-        Text(
-            text = momentLabel(message.createdAt),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 3.dp)
-        )
-
-        AnimatedVisibility(visible = actionsOpen || (isLastAssistant && !isUser)) {
-            MessageActionsRow(
-                isUser = isUser,
-                message = message,
-                content = message.content,
-                actions = actions,
-                isError = message.status == MessageStatus.ERROR
+        // Timestamp and the action buttons share one compact row, placed on
+        // the same side as the bubble (mirrored automatically in RTL).
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = momentLabel(message.createdAt),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            AnimatedVisibility(visible = actionsOpen || (isLastAssistant && !isUser)) {
+                MessageActionsRow(
+                    isUser = isUser,
+                    message = message,
+                    content = message.content,
+                    actions = actions,
+                    isError = message.status == MessageStatus.ERROR
+                )
+            }
         }
     }
 }
@@ -212,10 +235,8 @@ private fun MessageActionsRow(
     isError: Boolean
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 2.dp),
-        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(start = 4.dp)
     ) {
         IconButton(
             onClick = { actions.onCopy(content) },
