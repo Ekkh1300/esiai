@@ -28,5 +28,5 @@ SOFTWARE.
 
 The interface ships the **Vazirmatn** font family (Regular, Medium, Bold) in
 `app/src/main/res/font/`. Vazirmatn is licensed under the
-[SIL Open Font License 1.1](app/src/main/res/font/OFL.txt); the full license
-text is bundled next to the font files. The font is used unmodified.
+[SIL Open Font License 1.1](app/src/main/assets/vazirmatn-OFL.txt); the full license
+text is bundled in `app/src/main/assets/`. The font is used unmodified.
