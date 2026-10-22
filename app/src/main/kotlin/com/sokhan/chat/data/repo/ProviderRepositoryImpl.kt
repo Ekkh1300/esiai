@@ -5,13 +5,13 @@ import com.sokhan.chat.data.db.DbMappers.toDomain
 import com.sokhan.chat.data.db.DbMappers.toEntity
 import com.sokhan.chat.data.db.dao.ModelDao
 import com.sokhan.chat.data.db.dao.ProviderDao
-import com.sokhan.chat.data.datastore.SettingsStore
 import com.sokhan.chat.domain.model.ChatModel
 import com.sokhan.chat.domain.model.ModelCapabilities
 import com.sokhan.chat.domain.model.ProviderConfig
 import com.sokhan.chat.domain.repository.ModelRepository
 import com.sokhan.chat.domain.repository.ProviderRepository
 import com.sokhan.chat.domain.repository.ResolvedProvider
+import com.sokhan.chat.domain.repository.SettingsRepository
 import com.sokhan.chat.core.Ids
 import com.sokhan.chat.security.SecureStore
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +24,7 @@ class ProviderRepositoryImpl(
     private val dao: ProviderDao,
     private val modelDao: ModelDao,
     private val secureStore: SecureStore,
-    private val settings: SettingsStore
+    private val settings: SettingsRepository
 ) : ProviderRepository {
 
     override fun observeAll(): Flow<List<ProviderConfig>> =

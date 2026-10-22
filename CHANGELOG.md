@@ -37,3 +37,19 @@ First public release.
   import counts, plus Markdown export/share of conversations.
 - Tests: a JVM unit suite (MockWebServer provider tests, backup/exports, ids/token estimator,
   error-kind mapping) and an instrumented Room DAO suite; GitHub Actions CI workflow.
+
+### Fixed — post-release hotfix (2026-10-22)
+
+- **App name**: the launcher label and the in-app brand are now **ESIAI** (English + Persian).
+- **Startup crash**: `ProviderRepositoryImpl` asked Koin for the concrete `SettingsStore` type, which
+  had no definition (`NoDefinitionFoundException`) — the app died on the first screen. It now depends
+  on the `SettingsRepository` interface.
+- **Dead settings actions**: `ActionRow` defaulted to `clickable = false`, so *Export data*,
+  *Import data* and *Clear all data* could never be tapped.
+- **Activity-result crash**: `rememberLauncherForActivityResult` lost its registry owner because the
+  locale wrapper replaces `LocalContext`; the activity now provides the registry and back-press
+  owners explicitly at the composition root.
+- **Dialog language**: dialogs live in their own windows and used the *system* language; the
+  activity now serves locale-aware resources, so every window follows the in-app language.
+- Backup import keeps attachments (`@Upsert` instead of `REPLACE`), a failed regenerate no longer
+  deletes the previous reply, and Keystore writes are atomic (temp file + rename).

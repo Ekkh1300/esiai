@@ -271,7 +271,7 @@ fun SettingsScreen(
             ) {
                 scope.launch {
                     pendingJson = viewModel.exportJson(includeKeys)
-                    exportLauncher.launch("sokhan-backup.json")
+                    exportLauncher.launch("esiai-backup.json")
                 }
             }
             ActionRow(
@@ -461,7 +461,7 @@ private fun SwitchRow(
 private fun ActionRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
-    clickable: Boolean = false,
+    clickable: Boolean = true,
     onClick: () -> Unit
 ) {
     Row(
