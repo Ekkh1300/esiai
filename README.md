@@ -1,6 +1,6 @@
-# Sokhan · سخن
+# ESIAI
 
-**Sokhan** (Persian for "speech") is an open-source, bring-your-own-key (BYOK) AI chat client for
+**ESIAI** is an open-source, bring-your-own-key (BYOK) AI chat client for
 Android, written in Kotlin + Jetpack Compose. It talks to any **OpenAI-compatible** API —
 OpenAI, DeepSeek, OpenRouter, Together, Groq,LM Studio, Ollama (OpenAI mode), vLLM, llama.cpp
 server, or any other endpoint that speaks the `/chat/completions` + `/models` dialect.
@@ -101,7 +101,7 @@ recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits & inspirations
 
-Sokhan was written from scratch, but ideas were consciously borrowed from excellent open-source
+ESIAI was written from scratch, but ideas were consciously borrowed from excellent open-source
 peers:
 
 - **[RikkaHub](https://github.com/rikkahub/rikkahub)** — Android Kotlin/Compose BYOK chat client.
@@ -116,8 +116,8 @@ peers:
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — self-hosted web UI; influenced the
   flat "role → content" Markdown export format and the multi-provider-friendly settings layout.
 
-None of their code is used; Sokhan is MIT-licensed independent work.
+None of their code is used; ESIAI is MIT-licensed independent work.
 
 ## License
 
-[MIT](LICENSE) © 2026 Sokhan contributors
+[MIT](LICENSE) © 2026 ESIAI contributors
