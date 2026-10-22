@@ -1,9 +1,9 @@
 # Research: similar open-source AI chat clients
 
-Before writing Sokhan, five widely-used open-source clients were studied to guide product and
-architectural decisions. Sokhan borrows **ideas**, never code.
+Before writing ESIAI, five widely-used open-source clients were studied to guide product and
+architectural decisions. ESIAI borrows **ideas**, never code.
 
-| Project | Stack | What it is | What Sokhan took away |
+| Project | Stack | What it is | What ESIAI took away |
 | --- | --- | --- | --- |
 | **[RikkaHub](https://github.com/rikkahub/rikkahub)** | Kotlin, Jetpack Compose, Android native | BYOK Android chat client with multi-provider support, streaming and a rich message UI. | The core pattern: **persist-while-streaming** — keep message rows in the local DB while tokens arrive so state survives navigation/process death; DB-first thinking for chat UI. |
 | **[Chatbox](https://github.com/Bin-Huang/chatbox)** | TypeScript/Electron (+ mobile) | Popular cross-platform BYOK chat with "My Providers" onboarding (key, endpoint, model) and conversation export. | The frictionless **connection onboarding** flow (base URL + key → test → pick model) and prompt libraries as first-class editable data. |
@@ -14,15 +14,15 @@ architectural decisions. Sokhan borrows **ideas**, never code.
 ## Decisions shaped by the survey
 
 - **Native Kotlin + Compose, single APK, no server** — none of the studied clients are fully
-  Android-native *and* serverless; that combination is Sokhan's niche (RikkaHub shares the stack).
-- **BYOK with per-conversation overrides** — embraced by all five; Sokhan additionally lets a
+  Android-native *and* serverless; that combination is ESIAI's niche (RikkaHub shares the stack).
+- **BYOK with per-conversation overrides** — embraced by all five; ESIAI additionally lets a
   conversation pin a provider/model snapshot (with a frozen display label) so history stays
   truthful even after a provider is later renamed or deleted.
 - **Visible connection diagnostics** — Chatbox/Cherry Studio's "test connection" inspired
-  Sokhan's stepwise probe (reach → auth → models → chat) with per-step pass/fail details.
-- **No WebView for content** — some studied clients delegate rich text to web viewports; Sokhan
+  ESIAI's stepwise probe (reach → auth → models → chat) with per-step pass/fail details.
+- **No WebView for content** — some studied clients delegate rich text to web viewports; ESIAI
   renders Markdown natively for theme/RTL consistency.
-- **Export as a contract** — Open WebUI/LobeChat's export ergonomics set the bar: Sokhan ships a
+- **Export as a contract** — Open WebUI/LobeChat's export ergonomics set the bar: ESIAI ships a
   JSON full backup (with explicit key inclusion) plus per-conversation Markdown export.
 
 ## Things deliberately rejected

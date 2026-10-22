@@ -1,6 +1,6 @@
 # Security policy
 
-Sokhan is a client app that talks **directly to AI provider endpoints you configure**, using API
+ESIAI is a client app that talks **directly to AI provider endpoints you configure**, using API
 keys you provide. There is no server component, no account system and no telemetry.
 
 ## Reporting a vulnerability
@@ -27,7 +27,7 @@ A client app cannot change the basic properties of BYOK; these are inherent:
 
 1. **On-device attackers.** With read access to the process (a rooted or compromised device), the
    stored key can be decrypted — the Keystore guard is as strong as the device's Keymaster
-   implementation. Sokhan uses hardware-backed keys when the device offers them.
+   implementation. ESIAI uses hardware-backed keys when the device offers them.
 2. **Keys necessarily leave the device toward your provider.** BYOK means the configured endpoint
    receives the key over TLS on every request. Whoever obtains your key controls billing and model
    choice accordingly.
@@ -44,7 +44,7 @@ A client app cannot change the basic properties of BYOK; these are inherent:
 ## Supply chain
 
 - Dependencies are pinned in `gradle/libs.versions.toml`.
-- Mirror tiers are **opt-in** (`sokhan.mavenMirrorUrl` in local.properties); the committed local
+- Mirror tiers are **opt-in** (`ESIAI.mavenMirrorUrl` in local.properties); the committed local
   seed repo `third_party/local-maven` removes cold-start dependence on any single mirror.
 - The wrapper is pinned (`gradle/wrapper/gradle-wrapper.properties`); CI builds releases from
   tagged commits, not from working trees.

@@ -1,6 +1,6 @@
-# Contributing to Sokhan
+# Contributing to ESIAI
 
-Thanks for helping! Sokhan is an open-source Android BYOK chat client built in Kotlin with
+Thanks for helping! ESIAI is an open-source Android BYOK chat client built in Kotlin with
 Jetpack Compose. This document gets you productive quickly.
 
 ## Development setup

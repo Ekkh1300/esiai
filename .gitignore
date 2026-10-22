@@ -19,6 +19,11 @@ captures/
 outputs/
 .kotlin/
 
+# Release signing material — NEVER commit
+keystore.properties
+*.jks
+*.keystore
+
 # Kotlin \u0026 misc
 *.log
 .heapdump

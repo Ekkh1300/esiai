@@ -49,11 +49,16 @@ Studio Ladybug/Meerkat or any Gradle 9.3.x shell.
 ```bash
 # from the repository root
 ./gradlew :app:assembleDebug        # debug APK in app/build/outputs/apk/debug/
+./gradlew :app:assembleRelease      # minified release APK (signed when a keystore is configured)
 ./gradlew :app:testDebugUnitTest    # unit tests
-./gradlew :app:connectedDebugAndroidTest   # Room DAO tests (device or emulator required)
+./gradlew :app:connectedDebugAndroidTest   # Room DAO + DI graph tests (device or emulator required)
 ```
 
 Or open the folder in Android Studio and press Run. `minSdk 26`, `targetSdk/compileSdk 36`.
+
+Release builds are signed with a local keystore that is **not** part of this repository —
+see [docs/RELEASING.md](docs/RELEASING.md) for the one-time setup, the verification command
+and the backup rules.
 
 ### Network-restricted build environments
 
@@ -64,11 +69,11 @@ uses plain `mavenCentral()` / `google()` / `gradlePluginPortal()`.
 - the local seed repo `third_party/local-maven/<group>/<artifact>/<version>/…` is always consulted
   first when present; artifacts pinned there (e.g. the committed KSP plugin marker POM) resolve
   even when every remote mirror is flaky;
-- setting `sokhan.mavenMirrorUrl=<base>` in `local.properties` (git-ignored) enables two extra
+- setting `ESIAI.mavenMirrorUrl=<base>` in `local.properties` (git-ignored) enables two extra
   tiers *before* the default repositories:
   1. Aliyun mirrors — `<base>/google`, `<base>/public`, `<base>/gradle-plugin` (pluginManagement)
      and `<base>/google`, `<base>/public` (dependencies); e.g.
-     `sokhan.mavenMirrorUrl=https://maven.aliyun.com/repository`
+     `ESIAI.mavenMirrorUrl=https://maven.aliyun.com/repository`
   2. Tencent (`mirrors.cloud.tencent.com/nexus/repository/maven-public`) as a gap-filler;
 - for a single missing artifact, pre-seed the local repo with the helper script:
 
@@ -84,7 +89,7 @@ tiers are inert there.
 ## Project structure
 
 ```
-app/src/main/kotlin/com/sokhan/chat/
+app/src/main/kotlin/com/ESIAI/chat/
 ├── core/        # small dependency-free helpers (ids, token estimation, logging)
 ├── security/    # Android Keystore–backed API key storage (AES-GCM)
 ├── domain/      # models, repository interfaces, ChatEngine + services

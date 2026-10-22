@@ -1,6 +1,6 @@
 # Architecture
 
-Sokhan is a single-module Android app (`:app`) written in Kotlin with Jetpack Compose. The code is
+ESIAI is a single-module Android app (`:app`) written in Kotlin with Jetpack Compose. The code is
 organised in packages with a strict dependency direction:
 
 ```
