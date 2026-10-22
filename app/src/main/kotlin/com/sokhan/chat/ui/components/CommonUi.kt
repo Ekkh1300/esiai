@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sokhan.chat.R
 import com.sokhan.chat.domain.model.ChatErrorKind
+import androidx.compose.foundation.layout.Box
 
 enum class ConfirmationStyle { NEUTRAL, DESTRUCTIVE }
 
@@ -93,22 +96,35 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        // A soft two-tone disc instead of a flat grey circle: the one warm
+        // spot on an otherwise quiet screen.
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh
+            color = Color.Transparent,
+            modifier = Modifier.size(96.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(18.dp)
-                    .size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    )
+                )
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(38.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
         }
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center
         )
         Text(
@@ -181,3 +197,4 @@ fun errorTextFor(kind: String?, modelLabel: String? = null): String =
         errorResFor(ChatErrorKind.safeValueOf(kind)),
         modelLabel.orEmpty()
     )
+

@@ -1,6 +1,7 @@
 package com.sokhan.chat.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,10 +11,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -57,6 +61,9 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 
 /** Callbacks a chat row can trigger. */
 data class ChatMessageActions(
@@ -87,117 +94,97 @@ fun ChatMessageBubble(
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
         if (!isUser) {
+            // Model identity: a small tinted chip next to the model name.
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.size(22.dp)
                 ) {
                     Icon(
                         Icons.Filled.School,
                         contentDescription = null,
-                        modifier = Modifier
-                            .padding(6.dp)
-                            .size(16.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        modifier = Modifier.padding(5.dp),
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
                 Text(
                     text = modelLabel ?: message.modelId ?: "AI",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 6.dp)
+                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
         }
 
-        val bubbleColor = when {
-            isUser -> MaterialTheme.colorScheme.primaryContainer
-            message.status == MessageStatus.ERROR -> MaterialTheme.colorScheme.errorContainer
-            else -> MaterialTheme.colorScheme.surfaceContainerHigh
-        }
         val bubbleShape = RoundedCornerShape(
-            topStart = if (isUser) 18.dp else 4.dp,
-            topEnd = if (isUser) 4.dp else 18.dp,
-            bottomStart = 18.dp,
-            bottomEnd = 18.dp
+            topStart = if (isUser) 20.dp else 6.dp,
+            topEnd = if (isUser) 6.dp else 20.dp,
+            bottomStart = 20.dp,
+            bottomEnd = 20.dp
         )
 
-        Column(
-            modifier = Modifier
-                // Wrap the content (so the bubble hugs its text and the
-                // column alignment decides which side it sits on) but never
-                // grow wider than a comfortable reading column.
-                .widthIn(max = 340.dp)
-                .clip(bubbleShape)
-                .clickable { actionsOpen = !actionsOpen }
-                .background(bubbleColor)
-                .then(
-                    if (isUser) {
-                        Modifier
-                    } else {
-                        // A hairline keeps the assistant bubble readable on
-                        // top of a busy background.
-                        Modifier.border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            shape = bubbleShape
-                        )
-                    }
-                )
-                .padding(horizontal = 16.dp, vertical = 11.dp)
-        ) {
-            if (!isUser && !message.reasoning.isNullOrBlank()) {
-                ReasoningBlock(message.reasoning)
-                Spacer(Modifier.height(6.dp))
-            }
-
-            when {
-                message.status == MessageStatus.ERROR && message.content.isBlank() ->
-                    ErrorInline(
-                        kind = message.errorKind,
-                        detail = message.errorDetail,
+        if (isUser) {
+            // Your own voice: one solid, confident colour.
+            Surface(
+                color = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = bubbleShape,
+                modifier = Modifier
+                    .widthIn(max = 340.dp)
+                    .clip(bubbleShape)
+                    .clickable { actionsOpen = !actionsOpen }
+            ) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 11.dp)) {
+                    BubbleContent(
+                        message = message,
                         modelLabel = modelLabel,
-                        onRetry = actions.onRegenerate
+                        markdownEnabled = markdownEnabled,
+                        codeHighlighting = codeHighlighting,
+                        isStreaming = isStreaming,
+                        attachments = attachments,
+                        resolvedPath = resolvedPath,
+                        actions = actions,
+                        isUser = true
                     )
-                isStreaming && message.content.isBlank() ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TypingDots()
-                        Text(
-                            text = stringResource(R.string.chat_generating),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                markdownEnabled && !isUser && message.content.isNotBlank() -> {
-                    MarkdownText(
-                        markdown = message.content,
-                        codeHighlighting = codeHighlighting
-                    )
-                    if (isStreaming) StreamingCursor()
-                }
-                else -> {
-                    Text(
-                        text = message.content.ifEmpty { " " },
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    if (isStreaming) StreamingCursor()
                 }
             }
-
-            if (attachments.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                AttachmentStrip(attachments, resolvedPath)
-            }
-
-            if (!isUser && message.usage != null && message.status == MessageStatus.SUCCESS) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = usageLine(message),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        } else {
+            // The assistant answers as a card: a paper surface with a
+            // hairline. The model chip above it carries the identity, so the
+            // card itself stays quiet.
+            Surface(
+                color = if (message.status == MessageStatus.ERROR) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+                contentColor = if (message.status == MessageStatus.ERROR) {
+                    MaterialTheme.colorScheme.onErrorContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+                shape = bubbleShape,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier
+                    .widthIn(max = 340.dp)
+                    .clip(bubbleShape)
+                    .clickable { actionsOpen = !actionsOpen }
+            ) {
+                Column(Modifier.padding(horizontal = 16.dp, vertical = 11.dp)) {
+                    BubbleContent(
+                        message = message,
+                        modelLabel = modelLabel,
+                        markdownEnabled = markdownEnabled,
+                        codeHighlighting = codeHighlighting,
+                        isStreaming = isStreaming,
+                        attachments = attachments,
+                        resolvedPath = resolvedPath,
+                        actions = actions,
+                        isUser = false
+                    )
+                }
             }
         }
 
@@ -226,6 +213,73 @@ fun ChatMessageBubble(
     }
 }
 
+/** The inside of a bubble â€” shared by the filled user bubble and the assistant card. */
+@Composable
+private fun BubbleContent(
+    message: Message,
+    modelLabel: String?,
+    markdownEnabled: Boolean,
+    codeHighlighting: Boolean,
+    isStreaming: Boolean,
+    attachments: List<Attachment>,
+    resolvedPath: (Attachment) -> File?,
+    actions: ChatMessageActions,
+    isUser: Boolean
+) {
+    if (!isUser && !message.reasoning.isNullOrBlank()) {
+        ReasoningBlock(message.reasoning)
+        Spacer(Modifier.height(8.dp))
+    }
+
+    when {
+        message.status == MessageStatus.ERROR && message.content.isBlank() ->
+            ErrorInline(
+                kind = message.errorKind,
+                detail = message.errorDetail,
+                modelLabel = modelLabel,
+                onRetry = actions.onRegenerate
+            )
+        isStreaming && message.content.isBlank() ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TypingDots()
+                Text(
+                    text = stringResource(R.string.chat_generating),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        markdownEnabled && !isUser && message.content.isNotBlank() -> {
+            MarkdownText(
+                markdown = message.content,
+                codeHighlighting = codeHighlighting
+            )
+            if (isStreaming) StreamingCursor()
+        }
+        else -> {
+            Text(
+                text = message.content.ifEmpty { " " },
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (isStreaming) StreamingCursor()
+        }
+    }
+
+    if (attachments.isNotEmpty()) {
+        Spacer(Modifier.height(10.dp))
+        AttachmentStrip(attachments, resolvedPath)
+    }
+
+    if (!isUser && message.usage != null && message.status == MessageStatus.SUCCESS) {
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = usageLine(message),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 @Composable
 private fun MessageActionsRow(
     isUser: Boolean,
@@ -234,70 +288,63 @@ private fun MessageActionsRow(
     actions: ChatMessageActions,
     isError: Boolean
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 4.dp)
-    ) {
-        IconButton(
-            onClick = { actions.onCopy(content) },
-            modifier = Modifier.size(30.dp)
-        ) {
-            Icon(
-                Icons.Filled.ContentCopy,
-                contentDescription = stringResource(R.string.common_copy),
-                modifier = Modifier.size(17.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        IconButton(
-            onClick = { actions.onShare(message) },
-            modifier = Modifier.size(30.dp)
-        ) {
-            Icon(
-                Icons.Filled.Share,
-                contentDescription = stringResource(R.string.common_share),
-                modifier = Modifier.size(17.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // Small visual buttons, but a full 48dp touch target around each.
+        ActionChip(
+            icon = Icons.Filled.ContentCopy,
+            description = stringResource(R.string.common_copy),
+            onClick = { actions.onCopy(content) }
+        )
+        ActionChip(
+            icon = Icons.Filled.Share,
+            description = stringResource(R.string.common_share),
+            onClick = { actions.onShare(message) }
+        )
         if (isUser) {
-            IconButton(
-                onClick = { actions.onEdit(message) },
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    Icons.Filled.Edit,
-                    contentDescription = stringResource(R.string.chat_edit_message),
-                    modifier = Modifier.size(17.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ActionChip(
+                icon = Icons.Filled.Edit,
+                description = stringResource(R.string.chat_edit_message),
+                onClick = { actions.onEdit(message) }
+            )
         } else {
-            IconButton(
-                onClick = actions.onRegenerate,
-                modifier = Modifier.size(30.dp)
-            ) {
-                Icon(
-                    Icons.Filled.Refresh,
-                    contentDescription = stringResource(
-                        if (isError) R.string.error_hint_retry else R.string.chat_regenerate
-                    ),
-                    modifier = Modifier.size(17.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        IconButton(
-            onClick = { actions.onDelete(message) },
-            modifier = Modifier.size(30.dp)
-        ) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = stringResource(R.string.chat_delete_message),
-                modifier = Modifier.size(17.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            ActionChip(
+                icon = Icons.Filled.Refresh,
+                description = stringResource(
+                    if (isError) R.string.error_hint_retry else R.string.chat_regenerate
+                ),
+                onClick = actions.onRegenerate
             )
         }
+        ActionChip(
+            icon = Icons.Filled.Delete,
+            description = stringResource(R.string.chat_delete_message),
+            onClick = { actions.onDelete(message) },
+            tint = MaterialTheme.colorScheme.error
+        )
+    }
+}
+
+/** A quiet icon button with a 48dp touch target and an 18dp glyph. */
+@Composable
+private fun ActionChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
+    ) {
+        Icon(
+            icon,
+            contentDescription = description,
+            modifier = Modifier.size(18.dp),
+            tint = tint
+        )
     }
 }
 
@@ -310,10 +357,11 @@ private fun ReasoningBlock(reasoning: String) {
         stringResource(R.string.chat_reasoning_show)
     }
     Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(Modifier.padding(8.dp)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { expanded = !expanded }
@@ -321,27 +369,51 @@ private fun ReasoningBlock(reasoning: String) {
                 Icon(
                     Icons.Filled.Description,
                     contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    modifier = Modifier.size(15.dp),
+                    tint = MaterialTheme.colorScheme.secondary
                 )
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp)
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+                Spacer(Modifier.weight(1f))
+                Icon(
+                    imageVector = if (expanded) {
+                        Icons.Filled.ExpandLess
+                    } else {
+                        Icons.Filled.ExpandMore
+                    },
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (expanded) {
-                Text(
-                    text = reasoning,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 14,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                        .horizontalScroll(rememberScrollState())
-                )
+                // The thinking notes read as a quiet aside: indented, muted and
+                // separated from the answer by a hairline.
+                Row(Modifier.padding(top = 8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .width(2.dp)
+                            .heightIn(min = 18.dp)
+                            .background(
+                                MaterialTheme.colorScheme.outlineVariant,
+                                RoundedCornerShape(1.dp)
+                            )
+                    )
+                    Text(
+                        text = reasoning,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 14,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                            .horizontalScroll(rememberScrollState())
+                    )
+                }
             }
         }
     }
@@ -447,10 +519,10 @@ private fun StreamingCursor() {
 private fun usageLine(message: Message): String {
     val usage = message.usage ?: return ""
     val parts = mutableListOf<String>()
-    usage.promptTokens?.let { parts.add("↓$it") }
-    usage.completionTokens?.let { parts.add("↑$it") }
+    usage.promptTokens?.let { parts.add("â†“$it") }
+    usage.completionTokens?.let { parts.add("â†‘$it") }
     usage.totalTokens?.let { parts.add("~$it") }
-    return parts.joinToString("  ·  ")
+    return parts.joinToString("  Â·  ")
 }
 
 /** HH:mm for today/yesterday; otherwise date (locale aware). */
@@ -464,6 +536,7 @@ fun momentLabel(epochMillis: Long): String {
         LocalDate.now() -> time
         LocalDate.now().minusDays(1) -> stringResource(R.string.time_yesterday) + " " + time
         else -> DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
-            .format(Instant.ofEpochMilli(epochMillis).atZone(zone)) + " · " + time
+            .format(Instant.ofEpochMilli(epochMillis).atZone(zone)) + " Â· " + time
     }
 }
+

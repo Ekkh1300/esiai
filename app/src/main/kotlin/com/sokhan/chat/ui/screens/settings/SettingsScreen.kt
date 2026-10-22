@@ -57,6 +57,10 @@ import com.sokhan.chat.domain.model.ThemeMode
 import com.sokhan.chat.ui.components.SectionTitle
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.size
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -469,17 +473,28 @@ private fun ActionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = clickable, onClick = onClick)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 10.dp)
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
+        // Icon in a tinted tile: gives the long settings list a scannable
+        // rhythm instead of a column of naked glyphs.
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.size(34.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = 14.dp)
         )
     }
 }
@@ -497,3 +512,5 @@ private fun readString(context: Context, uri: Uri): String? = runCatching {
         stream.readBytes().toString(Charsets.UTF_8)
     }
 }.getOrNull()
+
+

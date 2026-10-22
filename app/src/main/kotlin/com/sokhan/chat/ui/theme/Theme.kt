@@ -13,16 +13,28 @@ import com.sokhan.chat.domain.model.ThemeMode
 
 private val LightScheme = lightColorScheme(
     primary = SokhanColors.Indigo40,
-    onPrimary = SokhanColors.Indigo90,
+    onPrimary = androidx.compose.ui.graphics.Color.White,
     primaryContainer = SokhanColors.Indigo90,
     onPrimaryContainer = SokhanColors.Indigo30,
     secondary = SokhanColors.TealBean,
+    onSecondary = androidx.compose.ui.graphics.Color.White,
     secondaryContainer = SokhanColors.TealSoft,
-    onSecondaryContainer = SokhanColors.TealBean,
-    tertiary = SokhanColors.Pinkish,
-    tertiaryContainer = SokhanColors.PinkishSoft,
+    onSecondaryContainer = SokhanColors.TealDark,
+    tertiary = SokhanColors.Copper40,
+    onTertiary = androidx.compose.ui.graphics.Color.White,
+    tertiaryContainer = SokhanColors.Copper90,
+    onTertiaryContainer = SokhanColors.Copper30,
     surface = SokhanColors.SurfaceLight,
-    surfaceContainer = SokhanColors.SurfaceContainerLight
+    surfaceContainerLowest = androidx.compose.ui.graphics.Color.White,
+    surfaceContainerLow = SokhanColors.SurfaceLight,
+    surfaceContainer = SokhanColors.SurfaceContainerLight,
+    surfaceContainerHigh = SokhanColors.SurfaceContainerHighLight,
+    surfaceContainerHighest = SokhanColors.SurfaceContainerHighestLight,
+    outlineVariant = SokhanColors.OutlineVariantLight,
+    error = androidx.compose.ui.graphics.Color(0xFFB3261E),
+    onError = androidx.compose.ui.graphics.Color.White,
+    errorContainer = androidx.compose.ui.graphics.Color(0xFFF9DEDC),
+    onErrorContainer = androidx.compose.ui.graphics.Color(0xFF410E0B)
 )
 
 private val DarkScheme = darkColorScheme(
@@ -31,11 +43,24 @@ private val DarkScheme = darkColorScheme(
     primaryContainer = SokhanColors.Indigo30,
     onPrimaryContainer = SokhanColors.Indigo90,
     secondary = SokhanColors.TealSoft,
-    secondaryContainer = SokhanColors.TealBean,
+    onSecondary = SokhanColors.TealDark,
+    secondaryContainer = SokhanColors.TealDark,
     onSecondaryContainer = SokhanColors.TealSoft,
-    tertiary = SokhanColors.PinkishSoft,
+    tertiary = SokhanColors.Copper80,
+    onTertiary = SokhanColors.Copper30,
+    tertiaryContainer = SokhanColors.Copper30,
+    onTertiaryContainer = SokhanColors.Copper90,
     surface = SokhanColors.SurfaceDark,
-    surfaceContainer = SokhanColors.SurfaceContainerDark
+    surfaceContainerLowest = androidx.compose.ui.graphics.Color(0xFF0C0C12),
+    surfaceContainerLow = SokhanColors.SurfaceDark,
+    surfaceContainer = SokhanColors.SurfaceContainerDark,
+    surfaceContainerHigh = SokhanColors.SurfaceContainerHighDark,
+    surfaceContainerHighest = SokhanColors.SurfaceContainerHighestDark,
+    outlineVariant = SokhanColors.OutlineVariantDark,
+    error = androidx.compose.ui.graphics.Color(0xFFFFB4AB),
+    onError = androidx.compose.ui.graphics.Color(0xFF690005),
+    errorContainer = androidx.compose.ui.graphics.Color(0xFF93000A),
+    onErrorContainer = androidx.compose.ui.graphics.Color(0xFFFFDAD6)
 )
 
 @Composable

@@ -1,10 +1,12 @@
 package com.sokhan.chat.ui.screens.chats
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Unarchive
@@ -34,6 +38,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -54,6 +59,7 @@ import com.sokhan.chat.R
 import com.sokhan.chat.domain.repository.ConversationCardSnapshot
 import com.sokhan.chat.domain.repository.StreamState
 import com.sokhan.chat.ui.components.EmptyState
+import com.sokhan.chat.ui.components.momentLabel
 import com.sokhan.chat.ui.components.TypingDots
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -150,7 +156,7 @@ fun ChatsScreen(
 
             when {
                 // Existing conversations stay reachable even when no provider
-                // is configured — hiding the history would make the chats
+                // is configured â€” hiding the history would make the chats
                 // unreachable. The provider hint is only shown when there is
                 // nothing else to display.
                 !hasProvider && cards.isEmpty() -> EmptyState(
@@ -174,7 +180,14 @@ fun ChatsScreen(
                 else ->
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp)
+                        contentPadding = PaddingValues(
+                            start = 14.dp,
+                            end = 14.dp,
+                            top = 10.dp,
+                            // Room for the FAB so the last card stays reachable.
+                            bottom = 96.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(cards, key = { it.conversation.id }) { card ->
                             ConversationRow(
@@ -255,74 +268,107 @@ private fun ConversationRow(
         stringResource(R.string.chat_untitled)
     }
 
-    ListItem(
-        modifier = Modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = { menuOpen = true }
-        ),
-        leadingContent = {
-            if (streaming) {
-                TypingDots(modifier = Modifier.size(width = 26.dp, height = 12.dp))
-            } else {
-                Icon(
-                    Icons.Filled.Forum,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { menuOpen = true }
+            )
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Avatar tile: a quiet identity mark for the conversation.
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    if (streaming) {
+                        TypingDots(modifier = Modifier.size(width = 24.dp, height = 12.dp))
+                    } else {
+                        Icon(
+                            Icons.Filled.Forum,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (conversation.pinned) {
+                        Icon(
+                            Icons.Filled.PushPin,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(start = 6.dp)
+                                .size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                val preview = card.previewText.orEmpty().ifBlank {
+                    stringResource(R.string.chats_preview_empty)
+                }
+                Text(
+                    text = preview,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
-        },
-        headlineContent = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                if (conversation.pinned) {
-                    Icon(
-                        Icons.Filled.PushPin,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(14.dp),
-                        tint = MaterialTheme.colorScheme.primary
+
+            Column(horizontalAlignment = Alignment.End) {
+                card.lastMessageAt?.let { stamp ->
+                    Text(
+                        text = momentLabel(stamp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Box {
+                    IconButton(onClick = { menuOpen = true }) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.common_more)
+                        )
+                    }
+                    ChatRowMenu(
+                        expanded = menuOpen,
+                        pinned = conversation.pinned,
+                        archived = conversation.archived,
+                        onDismiss = { menuOpen = false },
+                        onRename = onRename,
+                        onDelete = onDelete,
+                        onPin = onPin,
+                        onArchive = onArchive
                     )
                 }
             }
-        },
-        supportingContent = {
-            val preview = card.previewText.orEmpty().ifBlank {
-                stringResource(R.string.chats_preview_empty)
-            }
-            Text(
-                text = preview,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 2.dp)
-            )
-        },
-        trailingContent = {
-            Box {
-                TextButton(onClick = { menuOpen = true }) {
-                    Text(stringResource(R.string.common_more))
-                }
-                ChatRowMenu(
-                    expanded = menuOpen,
-                    pinned = conversation.pinned,
-                    archived = conversation.archived,
-                    onDismiss = { menuOpen = false },
-                    onRename = onRename,
-                    onDelete = onDelete,
-                    onPin = onPin,
-                    onArchive = onArchive
-                )
-            }
         }
-    )
+    }
 }
 
 @Composable

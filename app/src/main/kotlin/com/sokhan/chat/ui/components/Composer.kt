@@ -160,13 +160,14 @@ fun ChatComposer(
             ) {
                 if (attachmentsEnabled) {
                     Box {
-                        FilledIconButton(
+                        IconButton(
                             onClick = { attachMenuOpen = true },
                             enabled = enabled
                         ) {
                             Icon(
                                 Icons.Filled.PostAdd,
-                                contentDescription = stringResource(R.string.a11y_attach_menu)
+                                contentDescription = stringResource(R.string.a11y_attach_menu),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         AttachMenu(
@@ -212,11 +213,14 @@ fun ChatComposer(
                     placeholder = { Text(stringResource(R.string.chat_input_hint)) },
                     maxLines = 6,
                     enabled = enabled,
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
                         unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                        disabledIndicatorColor = androidx.compose.ui.graphics.Color.Transparent
+                        disabledIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                     )
                 )
 
