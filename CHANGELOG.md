@@ -60,6 +60,12 @@ First public release.
 - Polish: timestamp and message actions share one compact row, the jump-to-latest button is
   anchored to the trailing edge instead of floating in the middle, the "clear conversation" icon
   is a proper sweep icon, and assistant bubbles get a hairline border.
+- **Visual pass** — the interface is now set in Vazirmatn (bundled, SIL OFL) with a type scale
+  tuned for Persian, an "ink & signal" palette (indigo for your own voice, teal for the
+  assistant, copper for warnings), paper-like assistant cards with a model chip, a real card
+  layout for the conversation list, tinted icon tiles in the settings, a softer empty state and a
+  rounder composer. Message actions now use 48dp touch targets, and the light and dark schemes
+  fill the full surface-container ladder.
 - CI is green again: the Gradle wrapper is committed as executable (the Linux runner could not run
   it before) and the workflow uses current action versions.
 - New instrumented test walks the whole Koin graph, so a missing dependency definition fails the

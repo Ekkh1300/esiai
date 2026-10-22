@@ -21,8 +21,11 @@ No accounts. No telemetry. No server component — your API keys stay in your po
 - **Markdown rendering** — headings, lists, links, emphasis, inline & fenced code with syntax
   highlighting, block quotes and GFM tables, rendered natively in Compose (no WebView).
 - **Message actions** — copy, share, edit-and-resend, delete, retry, regenerate, stop mid-stream.
-- ** speaking English and فارسی, with full RTL** — switch language and (optionally) material you
-  dynamic colours inside the app, without restarting the activity.
+- **Language** — English and Persian (فارسی) with full RTL and in-app switching without an
+  activity restart. The interface is set in **Vazirmatn**, a font drawn for Persian that also
+  carries a clean Latin, so the text keeps its texture when you change the language.
+- **Look** — a calm indigo-and-teal palette, paper-like assistant cards, one confident bubble for
+  your own words, and a light/dark scheme that are both designed rather than inverted.
 - **Local data control** — conversations, assistants and provider configs live in an encrypted-at-
   rest-by-SQLite-on-disk Room database; keys live in Android Keystore–wrapped storage and are never
   written to the database or logs. One-tap JSON backup (with an *explicit* "include API keys"

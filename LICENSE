@@ -19,3 +19,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Bundled third-party assets
+
+### Vazirmatn (typography)
+
+The interface ships the **Vazirmatn** font family (Regular, Medium, Bold) in
+`app/src/main/res/font/`. Vazirmatn is licensed under the
+[SIL Open Font License 1.1](app/src/main/res/font/OFL.txt); the full license
+text is bundled next to the font files. The font is used unmodified.
