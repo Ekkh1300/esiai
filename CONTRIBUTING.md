@@ -69,6 +69,19 @@ New logic needs coverage next to the change:
 - [ ] `CHANGELOG.md` updated under *Unreleased* for user-facing changes
 - [ ] Screenshots/GIFs attached for visible UI changes
 
+## Running the app on a local emulator
+
+`tools/start-emulator.ps1` boots the AVD headless and waits until it is ready:
+
+```powershell
+.\tools\start-emulator.ps1 -Wait
+```
+
+Headless is not a preference: the windowed emulator is killed by a graphics-overlay conflict on
+some machines, and a killed emulator leaves a headless `qemu` process behind that keeps the AVD
+lock — the next start then fails with *"A snapshot operation is pending"*. The script clears
+stale processes and lock files before booting.
+
 ## Licensing
 
 By contributing you agree your work is released under the repository's [MIT license](LICENSE).
