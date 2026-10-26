@@ -1,6 +1,6 @@
-# Contributing to ESIAI
+﻿# Contributing to ESI Agent
 
-Thanks for helping! ESIAI is an open-source Android BYOK chat client built in Kotlin with
+Thanks for helping! ESI Agent is an open-source Android BYOK chat client built in Kotlin with
 Jetpack Compose. This document gets you productive quickly.
 
 ## Development setup
@@ -85,3 +85,4 @@ stale processes and lock files before booting.
 ## Licensing
 
 By contributing you agree your work is released under the repository's [MIT license](LICENSE).
+

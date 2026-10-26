@@ -1,4 +1,4 @@
-# Releasing ESIAI
+﻿# Releasing ESI Agent
 
 This project is published as a **signed** release APK. The signing key is deliberately
 **not** part of the repository.
@@ -8,15 +8,15 @@ This project is published as a **signed** release APK. The signing key is delibe
 The keystore lives outside the git working copy:
 
 ```
-E:\ai and op\sokhan-keystore\esiai-release.jks      (alias: esiai, RSA 4096, valid 27 years)
+E:\ai and op\sokhan-keystore\ESI Agent-release.jks      (alias: ESI Agent, RSA 4096, valid 27 years)
 ```
 
 The repository root contains a git-ignored `keystore.properties`:
 
 ```properties
-storeFile=E:/path/to/esiai-release.jks
+storeFile=E:/path/to/ESI Agent-release.jks
 storePassword=…
-keyAlias=esiai
+keyAlias=ESI Agent
 keyPassword=…
 ```
 
@@ -64,9 +64,9 @@ gh release upload v0.1.0 app\build\outputs\apk\release\app-release.apk --clobber
 The workflow intentionally does **not** sign — the runner has no key. To publish signed
 artefacts from CI:
 
-1. Encode the keystore: `base64 -w 0 esiai-release.jks`
-2. Store it as a repository secret `ESIAI_KEYSTORE_BASE64`, plus `ESIAI_KEYSTORE_PASSWORD`,
-   `ESIAI_KEY_ALIAS`, `ESIAI_KEY_PASSWORD`.
+1. Encode the keystore: `base64 -w 0 ESI Agent-release.jks`
+2. Store it as a repository secret `ESI_AGENT_KEYSTORE_BASE64`, plus `ESI_AGENT_KEYSTORE_PASSWORD`,
+   `ESI_AGENT_KEY_ALIAS`, `ESI_AGENT_KEY_PASSWORD`.
 3. In the workflow, decode the keystore into the runner's home directory, write a
    `keystore.properties` next to `settings.gradle.kts`, and run `:app:assembleRelease`.
 
@@ -81,3 +81,4 @@ private — a password manager plus an encrypted offline copy is enough.
 
 The key uses APK Signature Scheme v3, so a *key rotation* plan is possible in the future,
 but only if you keep the old key around as well.
+

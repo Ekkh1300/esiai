@@ -1,6 +1,6 @@
-# Architecture
+﻿# Architecture
 
-ESIAI is a single-module Android app (`:app`) written in Kotlin with Jetpack Compose. The code is
+ESI Agent is a single-module Android app (`:app`) written in Kotlin with Jetpack Compose. The code is
 organised in packages with a strict dependency direction:
 
 ```
@@ -108,3 +108,4 @@ checklist; see CONTRIBUTING.md).
 
 `connectedDebugAndroidTest` needs a device/emulator; `:app:compileDebugAndroidTestKotlin` compiles
 the suite on any machine and is the CI gate.
+

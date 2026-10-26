@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ESIAI</string>
+    <string name="app_name">ESI Agent</string>
     <string name="app_tagline">Bring your own key. Talk to any model.</string>
 
     <!-- ══════════ Common ══════════ -->

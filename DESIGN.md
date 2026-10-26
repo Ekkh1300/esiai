@@ -1,4 +1,4 @@
-# ESIAI — design system
+﻿# ESI Agent — design system
 
 The visual direction, in one place. Everything here is implemented in
 `app/src/main/kotlin/com/sokhan/chat/ui/theme/` and the components under
@@ -103,3 +103,4 @@ model chip and the action row follow the bubble they belong to.
   lock files that otherwise break the next start.
 - Touch targets are 48 dp minimum; the app is checked at 1.0 and 1.3 font
   scale, in light and dark, in both languages.
+

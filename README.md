@@ -1,6 +1,6 @@
-# ESIAI
+# ESI Agent
 
-**ESIAI** is an open-source, bring-your-own-key (BYOK) AI chat client for
+**ESI Agent** is an open-source, bring-your-own-key (BYOK) AI chat client for
 Android, written in Kotlin + Jetpack Compose. It talks to any **OpenAI-compatible** API —
 OpenAI, DeepSeek, OpenRouter, Together, Groq,LM Studio, Ollama (OpenAI mode), vLLM, llama.cpp
 server, or any other endpoint that speaks the `/chat/completions` + `/models` dialect.
@@ -97,7 +97,7 @@ tiers are inert there.
 ## Project structure
 
 ```
-app/src/main/kotlin/com/ESIAI/chat/
+app/src/main/kotlin/com/sokhan/chat/
 ├── core/        # small dependency-free helpers (ids, token estimation, logging)
 ├── security/    # Android Keystore–backed API key storage (AES-GCM)
 ├── domain/      # models, repository interfaces, ChatEngine + services
@@ -114,7 +114,7 @@ recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Credits & inspirations
 
-ESIAI was written from scratch, but ideas were consciously borrowed from excellent open-source
+ESI Agent was written from scratch, but ideas were consciously borrowed from excellent open-source
 peers:
 
 - **[RikkaHub](https://github.com/rikkahub/rikkahub)** — Android Kotlin/Compose BYOK chat client.
@@ -129,8 +129,8 @@ peers:
 - **[Open WebUI](https://github.com/open-webui/open-webui)** — self-hosted web UI; influenced the
   flat "role → content" Markdown export format and the multi-provider-friendly settings layout.
 
-None of their code is used; ESIAI is MIT-licensed independent work.
+None of their code is used; ESI Agent is MIT-licensed independent work.
 
 ## License
 
-[MIT](LICENSE) © 2026 ESIAI contributors
+[MIT](LICENSE) © 2026 ESI Agent contributors

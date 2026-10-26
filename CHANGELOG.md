@@ -1,6 +1,6 @@
-# Changelog
+﻿# Changelog
 
-All notable changes to ESIAI are documented here. Format based on
+All notable changes to ESI Agent are documented here. Format based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -43,7 +43,7 @@ First public release.
 - **Agent mode** (Settings → *Agent mode*, on by default): the model can call 12 on-device
   tools — `set_theme`, `set_dynamic_colors`, `set_language`, `search_conversations`,
   `read_conversation`, `create_conversation`, `rename_conversation`, `delete_conversation`,
-  `send_message`, `list_assistants`, `list_providers`, `export_backup` — and ESIAI runs them
+  `send_message`, `list_assistants`, `list_providers`, `export_backup` — and ESI Agent runs them
   locally for up to 6 turns per request.
 - Every write or destructive call pauses for an explicit **Allow this action?** dialog that
   shows the tool name and its arguments; *Deny* feeds a polite decline back to the model so the
@@ -60,7 +60,7 @@ First public release.
 
 ### Fixed — post-release hotfix (2026-10-22)
 
-- **App name**: the launcher label and the in-app brand are now **ESIAI** (English + Persian).
+- **App name**: the launcher label and the in-app brand are now **ESI Agent** (English + Persian).
 - **Startup crash**: `ProviderRepositoryImpl` asked Koin for the concrete `SettingsStore` type, which
   had no definition (`NoDefinitionFoundException`) — the app died on the first screen. It now depends
   on the `SettingsRepository` interface.
@@ -90,3 +90,4 @@ First public release.
   it before) and the workflow uses current action versions.
 - New instrumented test walks the whole Koin graph, so a missing dependency definition fails the
   test run instead of crashing the app on startup.
+
