@@ -38,6 +38,26 @@ First public release.
 - Tests: a JVM unit suite (MockWebServer provider tests, backup/exports, ids/token estimator,
   error-kind mapping) and an instrumented Room DAO suite; GitHub Actions CI workflow.
 
+### Added — agent mode (2026-10-26)
+
+- **Agent mode** (Settings → *Agent mode*, on by default): the model can call 12 on-device
+  tools — `set_theme`, `set_dynamic_colors`, `set_language`, `search_conversations`,
+  `read_conversation`, `create_conversation`, `rename_conversation`, `delete_conversation`,
+  `send_message`, `list_assistants`, `list_providers`, `export_backup` — and ESIAI runs them
+  locally for up to 6 turns per request.
+- Every write or destructive call pauses for an explicit **Allow this action?** dialog that
+  shows the tool name and its arguments; *Deny* feeds a polite decline back to the model so the
+  conversation continues. Results render as a tool row (✓ with a result preview, ✗ when the
+  user declined) beneath the assistant's call chips.
+- Providers without tool support degrade to an ordinary reply instead of failing the message.
+- Room schema **v2** — message rows carry `toolCalls`, `toolCallId` and `toolName` for tool
+  results — with an automatic v1 → v2 migration; backups include tool rows.
+- Debug builds permit cleartext HTTP so on-device local endpoints (Ollama, LM Studio, a mock
+  server on the host machine) work; release builds keep cleartext blocked by default.
+- Verified end-to-end on an Android 16 emulator against a mock OpenAI endpoint: tool call →
+  confirmation dialog → execution → tool row → final reply, in both the approve and the
+  decline path, plus instrumented v1 → v2 database migration tests.
+
 ### Fixed — post-release hotfix (2026-10-22)
 
 - **App name**: the launcher label and the in-app brand are now **ESIAI** (English + Persian).

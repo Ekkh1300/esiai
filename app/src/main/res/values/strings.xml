@@ -342,4 +342,25 @@
     <string name="time_today">Today</string>
     <string name="time_yesterday">Yesterday</string>
     <string name="update_hint_read_only">Read-only — edit via the pencil icon.</string>
+    <!-- Agent mode -->
+    <string name="settings_agent_mode">Agent mode</string>
+    <string name="settings_agent_mode_hint">Let the model act inside the app: search and rename conversations, switch the language or theme, export a backup. Anything that changes or deletes data asks for your approval first.</string>
+    <string name="agent_confirm_title">Allow this action?</string>
+    <string name="agent_confirm_destructive">This cannot be undone.</string>
+    <string name="common_allow">Allow</string>
+    <string name="common_deny">Deny</string>
+    <string name="agent_row_declined">Declined</string>
+    <string name="agent_row_failed">The tool failed</string>
+    <string name="agent_tool_search_conversations">Search conversations</string>
+    <string name="agent_tool_read_conversation">Read conversation</string>
+    <string name="agent_tool_list_assistants">List assistants</string>
+    <string name="agent_tool_list_providers">List providers</string>
+    <string name="agent_tool_create_conversation">Create conversation</string>
+    <string name="agent_tool_rename_conversation">Rename conversation</string>
+    <string name="agent_tool_delete_conversation">Delete conversation</string>
+    <string name="agent_tool_send_message">Send a message</string>
+    <string name="agent_tool_set_language">Change the language</string>
+    <string name="agent_tool_set_theme">Change the theme</string>
+    <string name="agent_tool_set_dynamic_colors">Change dynamic colours</string>
+    <string name="agent_tool_export_backup">Export a backup</string>
 </resources>

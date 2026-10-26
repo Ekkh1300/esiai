@@ -19,11 +19,33 @@ data class StreamState(val active: Set<String> = emptySet()) {
 }
 
 /**
+ * A tool call the agent wants to run but may not run unattended: the UI
+ * shows a confirmation dialog for each pending action and answers it with
+ * [ChatEngine.respondToToolAction].
+ */
+data class PendingToolAction(
+    val callId: String,
+    val conversationId: String,
+    /** Registry name, e.g. `delete_conversation` — the UI localises it. */
+    val toolName: String,
+    /** Argument echo so the dialog can show exactly what will happen. */
+    val argumentsSummary: String,
+    /** [com.sokhan.chat.domain.agent.ToolRisk] name. */
+    val risk: String
+)
+
+/**
  * Chat orchestration: builds request payloads, drives the provider client,
  * persists messages and manages one running stream per conversation.
  */
 interface ChatEngine {
     val streamState: StateFlow<StreamState>
+
+    /** Tool calls waiting for the user's approval (agent mode). */
+    val pendingToolActions: StateFlow<List<PendingToolAction>>
+
+    /** Approves or declines one pending tool call. */
+    fun respondToToolAction(callId: String, approved: Boolean)
 
     /** Finalizes STREAMING rows after a process death; call once at startup. */
     suspend fun recoverOrphans()
@@ -98,6 +120,13 @@ interface ConversationRepository {
     suspend fun deleteMessage(messageId: String)
     suspend fun deleteMessagesFrom(messageId: String)
     suspend fun deleteAllMessages(conversationId: String)
+
+    /**
+     * Stores the JSON array of tool calls an assistant message made, so the
+     * agent's actions survive restarts and can be replayed to the provider.
+     */
+    suspend fun attachToolCalls(messageId: String, toolCalls: String?)
+
     fun observeMessages(conversationId: String): Flow<List<Message>>
     suspend fun lastAssistantMessage(conversationId: String): Message?
 

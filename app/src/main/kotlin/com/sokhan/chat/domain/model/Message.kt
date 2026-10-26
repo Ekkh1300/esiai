@@ -31,5 +31,14 @@ data class Message(
     val usage: TokenUsage? = null,
     val finishReason: String? = null,
     val errorKind: String? = null,
-    val errorDetail: String? = null
+    val errorDetail: String? = null,
+    /**
+     * JSON array of the tool calls this assistant message made
+     * (`[{"id","name","arguments"}]`), null for plain messages.
+     */
+    val toolCalls: String? = null,
+    /** On TOOL messages: the id of the call this result answers. */
+    val toolCallId: String? = null,
+    /** On TOOL messages: which tool produced this row (e.g. `set_theme`). */
+    val toolName: String? = null
 )

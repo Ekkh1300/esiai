@@ -84,6 +84,13 @@ android {
         warningsAsErrors = false
     }
 
+    sourceSets {
+        getByName("androidTest") {
+            // MigrationTestHelper reads the exported Room schemas from here.
+            assets.srcDir("$projectDir/schemas")
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

@@ -2,15 +2,19 @@ package com.sokhan.chat.ui.screens.chat
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SmartToy
@@ -59,6 +63,7 @@ import com.sokhan.chat.ui.components.ChatMessageBubble
 import com.sokhan.chat.ui.components.ChatComposer
 import com.sokhan.chat.ui.components.EmptyState
 import com.sokhan.chat.ui.components.ModelPickerSheet
+import com.sokhan.chat.ui.components.agentToolLabel
 import com.sokhan.chat.ui.components.errorResFor
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -86,6 +91,7 @@ fun ChatScreen(
     val availableModels by viewModel.availableModels.collectAsStateWithLifecycle()
     val providers by viewModel.providersList.collectAsStateWithLifecycle()
     val sheetProviderId by viewModel.sheetProviderId.collectAsStateWithLifecycle()
+    val pendingToolActions by viewModel.pendingToolActions.collectAsStateWithLifecycle()
 
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -371,6 +377,64 @@ fun ChatScreen(
             dismissButton = {
                 TextButton(onClick = { clearDialog = false }) {
                     Text(stringResource(R.string.common_cancel))
+                }
+            }
+        )
+    }
+
+    // ── Agent mode: the model waits for permission to act ────────────────
+    pendingToolActions.firstOrNull()?.let { pending ->
+        AlertDialog(
+            onDismissRequest = { viewModel.respondToTool(pending.callId, false) },
+            title = {
+                Text(stringResource(R.string.agent_confirm_title))
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Bolt,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = agentToolLabel(pending.toolName),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    if (pending.argumentsSummary.isNotBlank()) {
+                        Text(
+                            text = pending.argumentsSummary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (pending.risk == "DESTRUCTIVE") {
+                        Text(
+                            text = stringResource(R.string.agent_confirm_destructive),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.respondToTool(pending.callId, true) }) {
+                    Text(
+                        text = stringResource(R.string.common_allow),
+                        color = if (pending.risk == "DESTRUCTIVE") {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.respondToTool(pending.callId, false) }) {
+                    Text(stringResource(R.string.common_deny))
                 }
             }
         )

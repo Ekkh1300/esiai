@@ -251,6 +251,12 @@ fun SettingsScreen(
                 checked = snapshot.enterSends,
                 onChange = { checked -> viewModel.update { it.copy(enterSends = checked) } }
             )
+            SwitchRow(
+                title = stringResource(R.string.settings_agent_mode),
+                subtitle = stringResource(R.string.settings_agent_mode_hint),
+                checked = snapshot.agentMode,
+                onChange = { checked -> viewModel.update { it.copy(agentMode = checked) } }
+            )
 
             HorizontalDivider(Modifier.padding(vertical = 10.dp))
 

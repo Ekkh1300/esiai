@@ -8,7 +8,7 @@ This project is published as a **signed** release APK. The signing key is delibe
 The keystore lives outside the git working copy:
 
 ```
-E:\ai and op\ESIAI-keystore\esiai-release.jks      (alias: esiai, RSA 4096, valid 27 years)
+E:\ai and op\sokhan-keystore\esiai-release.jks      (alias: esiai, RSA 4096, valid 27 years)
 ```
 
 The repository root contains a git-ignored `keystore.properties`:
@@ -50,8 +50,8 @@ Expect `Verified using v2 scheme: true` and `v3 scheme: true` (v3 enables key ro
 adb install -r app\build\outputs\apk\release\app-release.apk
 ```
 
-The release build uses the application id `com.ESIAI.chat`; the debug build adds the
-`.debug` suffix, so both can be installed side by side.
+The release build uses the application id `com.sokhan.chat`; the debug build is
+`com.sokhan.chat.debug`, so both can be installed side by side.
 
 ## Releasing on GitHub
 

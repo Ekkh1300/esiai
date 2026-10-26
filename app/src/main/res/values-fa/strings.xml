@@ -342,4 +342,25 @@
     <string name="time_today">امروز</string>
     <string name="time_yesterday">دیروز</string>
     <string name="update_hint_read_only">فقط خواندنی — از آیکون مداد ویرایش کن.</string>
+    <!-- Agent mode -->
+    <string name="settings_agent_mode">حالت ایجنت</string>
+    <string name="settings_agent_mode_hint">به مدل اجازه بده داخل برنامه کار انجام بده: جست‌وجو و تغییر نام گفتگوها، عوض‌کردن زبان یا پوسته، گرفتن خروجی پشتیبان. هر کاری که داده‌ای را تغییر یا حذف کند، اول از شما اجازه می‌گیرد.</string>
+    <string name="agent_confirm_title">به این اقدام اجازه بده؟</string>
+    <string name="agent_confirm_destructive">این اقدام قابل بازگشت نیست.</string>
+    <string name="common_allow">اجازه</string>
+    <string name="common_deny">رد</string>
+    <string name="agent_row_declined">رد شد</string>
+    <string name="agent_row_failed">ابزار اجرا نشد</string>
+    <string name="agent_tool_search_conversations">جست‌وجوی گفتگوها</string>
+    <string name="agent_tool_read_conversation">خواندن گفتگو</string>
+    <string name="agent_tool_list_assistants">فهرست دستیارها</string>
+    <string name="agent_tool_list_providers">فهرست سرویس‌ها</string>
+    <string name="agent_tool_create_conversation">ساخت گفتگو</string>
+    <string name="agent_tool_rename_conversation">تغییر نام گفتگو</string>
+    <string name="agent_tool_delete_conversation">حذف گفتگو</string>
+    <string name="agent_tool_send_message">ارسال پیام</string>
+    <string name="agent_tool_set_language">تغییر زبان</string>
+    <string name="agent_tool_set_theme">تغییر پوسته</string>
+    <string name="agent_tool_set_dynamic_colors">تغییر رنگ‌های پویا</string>
+    <string name="agent_tool_export_backup">خروجی پشتیبان</string>
 </resources>

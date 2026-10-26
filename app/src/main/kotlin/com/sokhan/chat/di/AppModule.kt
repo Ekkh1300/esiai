@@ -15,12 +15,15 @@ import com.sokhan.chat.data.db.dao.MessageDao
 import com.sokhan.chat.data.db.dao.ModelDao
 import com.sokhan.chat.data.db.dao.ProviderDao
 import com.sokhan.chat.data.export.BackupCodec
+import com.sokhan.chat.data.export.BackupFileWriter
 import com.sokhan.chat.data.export.BackupService
 import com.sokhan.chat.data.repo.AssistantRepositoryImpl
 import com.sokhan.chat.data.repo.AttachmentRepositoryImpl
 import com.sokhan.chat.data.repo.ConversationRepositoryImpl
 import com.sokhan.chat.data.repo.ModelRepositoryImpl
 import com.sokhan.chat.data.repo.ProviderRepositoryImpl
+import com.sokhan.chat.domain.agent.AgentToolRegistry
+import com.sokhan.chat.domain.agent.AppAgentTools
 import com.sokhan.chat.domain.repository.AssistantRepository
 import com.sokhan.chat.domain.repository.AttachmentRepository
 import com.sokhan.chat.domain.repository.ChatEngine
@@ -51,6 +54,7 @@ private fun buildOkHttp(): OkHttpClient = OkHttpClient.Builder()
 
 private fun buildDatabase(context: Context): SokhanDatabase =
     Room.databaseBuilder(context, SokhanDatabase::class.java, "sokhan.db")
+        .addMigrations(SokhanDatabase.MIGRATION_1_2)
         .build()
 
 /**
@@ -105,6 +109,24 @@ val appModule = module {
 
     single { BackupCodec() }
     single { BackupService(get(), get(), get(), get()) }
+    single { BackupFileWriter(androidContext()) }
+
+    // Agent mode: the registry the model can act through, and the app
+    // capabilities behind it (all local — the model asks, this code does).
+    single {
+        AppAgentTools(
+            conversations = get(),
+            assistants = get(),
+            providers = get(),
+            settings = get(),
+            exportBackup = { includeKeys ->
+                val service: BackupService = get()
+                val writer: BackupFileWriter = get()
+                writer.write(service.export(includeKeys))
+            }
+        )
+    }
+    single { AgentToolRegistry(get<AppAgentTools>().handlers()) }
 
     single<ProviderClientFactory> { DefaultProviderClientFactory(get()) }
 
@@ -119,6 +141,7 @@ val appModule = module {
             settings = get(),
             clientFactory = get(),
             appScope = get(qualifier = named("appScope")),
+            toolRegistry = get(),
         )
     }
 }

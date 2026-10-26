@@ -3,6 +3,10 @@ package com.sokhan.chat.domain.service
 import com.sokhan.chat.core.AppLog
 import com.sokhan.chat.core.DispatcherProvider
 import com.sokhan.chat.core.Ids
+import com.sokhan.chat.domain.agent.AgentTool
+import com.sokhan.chat.domain.agent.AgentToolHandler
+import com.sokhan.chat.domain.agent.AgentToolRegistry
+import com.sokhan.chat.domain.agent.ToolCall
 import com.sokhan.chat.domain.model.AttachmentKind
 import com.sokhan.chat.domain.model.ChatError
 import com.sokhan.chat.domain.model.ChatErrorKind
@@ -17,6 +21,7 @@ import com.sokhan.chat.domain.repository.AttachmentRepository
 import com.sokhan.chat.domain.repository.ChatEngine
 import com.sokhan.chat.domain.repository.ConversationRepository
 import com.sokhan.chat.domain.repository.ModelRepository
+import com.sokhan.chat.domain.repository.PendingToolAction
 import com.sokhan.chat.domain.repository.ProviderRepository
 import com.sokhan.chat.domain.repository.SettingsRepository
 import com.sokhan.chat.domain.repository.StreamState
@@ -27,7 +32,9 @@ import com.sokhan.chat.provider.ChatStreamEvent
 import com.sokhan.chat.provider.PdfPayload
 import com.sokhan.chat.provider.ProviderClientFactory
 import com.sokhan.chat.provider.ProviderContext
+import com.sokhan.chat.provider.ToolCallRequest
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,6 +48,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import java.util.Base64
 
 /** Everything the engine resolved for a single generation. */
@@ -72,6 +82,7 @@ class StreamingChatEngine(
     private val settings: SettingsRepository,
     private val clientFactory: ProviderClientFactory,
     private val appScope: CoroutineScope,
+    private val toolRegistry: AgentToolRegistry,
     private val streamThrottleMs: Long = 250L
 ) : ChatEngine {
 
@@ -81,6 +92,74 @@ class StreamingChatEngine(
 
     private val streamActive = MutableStateFlow(StreamState())
     override val streamState: StateFlow<StreamState> = streamActive.asStateFlow()
+
+    // ── Agent-mode approvals ─────────────────────────────────────────────
+
+    private val approvalLock = Any()
+    private val approvalWaiters = HashMap<String, CompletableDeferred<Boolean>>()
+    private val pendingActions = MutableStateFlow<List<PendingToolAction>>(emptyList())
+
+    override val pendingToolActions: StateFlow<List<PendingToolAction>> =
+        pendingActions.asStateFlow()
+
+    override fun respondToToolAction(callId: String, approved: Boolean) {
+        val waiter = synchronized(approvalLock) {
+            pendingActions.update { list -> list.filterNot { it.callId == callId } }
+            approvalWaiters.remove(callId)
+        }
+        waiter?.complete(approved)
+    }
+
+    /**
+     * Suspends until the user answers the confirmation dialog for [call].
+     * Cancellation (stop, navigation) drops the pending entry with it.
+     */
+    private suspend fun requestApproval(
+        conversationId: String,
+        call: ToolCall,
+        handler: AgentToolHandler
+    ): Boolean {
+        val deferred = CompletableDeferred<Boolean>()
+        synchronized(approvalLock) {
+            approvalWaiters[call.id] = deferred
+            pendingActions.update { list ->
+                list + PendingToolAction(
+                    callId = call.id,
+                    conversationId = conversationId,
+                    toolName = call.name,
+                    argumentsSummary = argsSummary(call),
+                    risk = handler.risk.name
+                )
+            }
+        }
+        try {
+            return deferred.await()
+        } finally {
+            synchronized(approvalLock) {
+                approvalWaiters.remove(call.id)
+                pendingActions.update { list -> list.filterNot { it.callId == call.id } }
+            }
+        }
+    }
+
+    private fun argsSummary(call: ToolCall): String =
+        call.arguments().entries.take(4).joinToString(", ") { (key, value) ->
+            "$key=${value.toString().take(60)}"
+        }.take(160)
+
+    /**
+     * Endpoints that rejected a `tools` request this session: their
+     * conversations silently downgrade to plain chat instead of failing.
+     */
+    private val toolsRejected = HashSet<String>()
+
+    private fun toolsRejectedFor(providerId: String): Boolean =
+        synchronized(toolsRejected) { toolsRejected.contains(providerId) }
+
+    private fun markToolsRejected(providerId: String) {
+        synchronized(toolsRejected) { toolsRejected.add(providerId) }
+        AppLog.d(TAG, "endpoint rejected tools; agent disabled for provider=$providerId")
+    }
 
     // ── ChatEngine ───────────────────────────────────────────────────────
 
@@ -162,23 +241,7 @@ class StreamingChatEngine(
             markInactive(conversationId)
         }
 
-        val replyId = Ids.newId()
-        // Keep insertion strictly after the latest existing row so the
-        // (createdAt, id) ordering always reads replies below the user turn.
-        val lastAt = conversations.observeMessages(conversationId).first().lastOrNull()?.createdAt ?: 0L
-        val now = maxOf(System.currentTimeMillis(), lastAt + 1)
-        conversations.insertMessage(
-            Message(
-                id = replyId,
-                conversationId = conversationId,
-                role = MessageRole.ASSISTANT,
-                content = "",
-                createdAt = now,
-                status = MessageStatus.STREAMING,
-                modelId = target.modelId,
-                providerId = target.providerConfig.id
-            )
-        )
+        val replyId = spawnAssistantRow(conversationId, target)
 
         val job = appScope.launch {
             runGeneration(conversationId, conversation, replyId, target)
@@ -228,103 +291,281 @@ class StreamingChatEngine(
         replyId: String,
         target: GenerationTarget
     ) {
-        val content = StringBuilder()
-        val reasoning = StringBuilder()
-        val snapshot = settings.settings.value
+        val snapshot: SettingsSnapshot = settings.settings.value
+        // Agent mode: tools ride along with the request until an endpoint
+        // proves it cannot handle them (one silent downgrade per generation).
+        var toolsAllowed = snapshot.agentMode && !toolsRejectedFor(target.providerConfig.id)
+        var downgraded = false
+        var turn = 0
+        var currentReplyId = replyId
 
-        var usage: TokenUsage? = null
-        var finishReason: String? = null
-        var lastFlushAt = 0L
-        var lastFlushLen = 0
+        while (true) {
+            val content = StringBuilder()
+            val reasoning = StringBuilder()
+            var usage: TokenUsage? = null
+            var finishReason: String? = null
+            var toolCalls: List<ToolCall> = emptyList()
+            var rowFinalized = false
+            var lastFlushAt = 0L
 
-        suspend fun flush(force: Boolean = false) {
-            val now = System.currentTimeMillis()
-            if (!force && now - lastFlushAt < streamThrottleMs) return
-            lastFlushAt = now
-            lastFlushLen = content.length
-            conversations.updateMessageContent(
-                replyId,
-                content.toString(),
-                reasoning.toString().ifBlank { null },
-                now
-            )
-        }
+            // Streaming text is flushed through Room on a ~250 ms cadence, so
+            // messages stay the single source of truth.
+            suspend fun flush(force: Boolean = false) {
+                val now = System.currentTimeMillis()
+                if (!force && now - lastFlushAt < streamThrottleMs) return
+                lastFlushAt = now
+                conversations.updateMessageContent(
+                    currentReplyId,
+                    content.toString(),
+                    reasoning.toString().ifBlank { null },
+                    now
+                )
+            }
 
-        try {
-            val payload = buildPayload(conversation, snapshot, target)
-            val client = clientFactory.clientFor(target.providerConfig.kind)
-            val context = ProviderContext(
-                config = target.providerConfig,
-                apiKey = target.apiKey
-            )
+            try {
+                val payload = buildPayload(
+                    conversation = conversation,
+                    snapshot = snapshot,
+                    target = target,
+                    agentTools = if (toolsAllowed) toolRegistry.tools else emptyList()
+                )
+                val client = clientFactory.clientFor(target.providerConfig.kind)
+                val context = ProviderContext(
+                    config = target.providerConfig,
+                    apiKey = target.apiKey
+                )
 
-            client.chatPayload(payload, context).collect { result ->
-                result.fold(
-                    onSuccess = { event ->
-                        when (event) {
-                            is ChatStreamEvent.Delta -> {
-                                content.append(event.text)
-                                flush()
+                val fragments = LinkedHashMap<Int, ToolCallAccumulator>()
+
+                client.chatPayload(payload, context).collect { result ->
+                    result.fold(
+                        onSuccess = { event ->
+                            when (event) {
+                                is ChatStreamEvent.Delta -> {
+                                    content.append(event.text)
+                                    flush()
+                                }
+                                is ChatStreamEvent.ReasoningDelta -> reasoning.append(event.text)
+                                is ChatStreamEvent.ToolCallDelta -> {
+                                    val accumulator = fragments.getOrPut(event.index) {
+                                        ToolCallAccumulator()
+                                    }
+                                    event.id?.let { accumulator.id = it }
+                                    event.name?.let { accumulator.name = it }
+                                    if (event.argumentsDelta.isNotEmpty()) {
+                                        accumulator.arguments.append(event.argumentsDelta)
+                                    }
+                                }
+                                is ChatStreamEvent.Usage -> usage = TokenUsage(
+                                    event.usage.promptTokens,
+                                    event.usage.completionTokens,
+                                    event.usage.totalTokens
+                                )
+                                is ChatStreamEvent.Finished -> finishReason = event.finishReason
                             }
-                            is ChatStreamEvent.ReasoningDelta -> reasoning.append(event.text)
-                            is ChatStreamEvent.Usage -> usage = TokenUsage(
-                                event.usage.promptTokens,
-                                event.usage.completionTokens,
-                                event.usage.totalTokens
-                            )
-                            is ChatStreamEvent.Finished -> finishReason = event.finishReason
-                        }
-                    },
-                    onFailure = { failure -> throw failure }
-                )
-            }
+                        },
+                        onFailure = { failure -> throw failure }
+                    )
+                }
+                toolCalls = fragments.values.mapNotNull { it.toToolCall() }
 
-            withContext(NonCancellable + Dispatchers.IO) {
-                flush(force = true)
-                if (content.isEmpty()) throw ChatError.EmptyResponse
-                conversations.finalizeMessage(
-                    messageId = replyId,
-                    status = MessageStatus.SUCCESS,
-                    content = content.toString(),
-                    reasoning = reasoning.toString().ifBlank { null },
-                    usage = usage,
-                    finishReason = finishReason ?: "stop",
-                    errorKind = null,
-                    errorDetail = null,
-                    updatedAt = System.currentTimeMillis()
-                )
-            }
-            AppLog.d(TAG, "generation finished conv=$conversationId chars=${content.length}")
-        } catch (cancelledEx: CancellationException) {
-            withContext(NonCancellable + Dispatchers.IO) {
-                if (content.isEmpty()) {
-                    conversations.deleteMessage(replyId)
-                } else {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    flush(force = true)
+                    // A tool-only turn (the model acted instead of writing)
+                    // is a complete response — only a truly empty one fails.
+                    if (content.isEmpty() && toolCalls.isEmpty()) throw ChatError.EmptyResponse
                     conversations.finalizeMessage(
-                        messageId = replyId,
-                        status = MessageStatus.PARTIAL,
+                        messageId = currentReplyId,
+                        status = MessageStatus.SUCCESS,
                         content = content.toString(),
                         reasoning = reasoning.toString().ifBlank { null },
                         usage = usage,
-                        finishReason = "stopped",
-                        errorKind = ChatErrorKind.CANCELLED.name,
+                        finishReason = finishReason
+                            ?: if (toolCalls.isEmpty()) "stop" else "tool_calls",
+                        errorKind = null,
                         errorDetail = null,
                         updatedAt = System.currentTimeMillis()
                     )
+                    rowFinalized = true
+                    if (toolCalls.isNotEmpty()) {
+                        conversations.attachToolCalls(
+                            currentReplyId,
+                            Json.encodeToString(toolCalls)
+                        )
+                    }
                 }
+                AppLog.d(
+                    TAG,
+                    "turn finished conv=$conversationId chars=${content.length} tools=${toolCalls.size}"
+                )
+
+                if (toolCalls.isEmpty()) return
+
+                // ── Agent round: run what the model asked for ────────────
+                if (!toolsAllowed || turn >= MAX_AGENT_TURNS) {
+                    // The calls stay recorded so the UI can show them, and
+                    // buildPayload answers them synthetically if we stop here.
+                    AppLog.d(TAG, "agent stops before running tools turn=$turn")
+                    return
+                }
+                for (call in toolCalls) {
+                    val handler = toolRegistry.find(call.name)
+                    val approved = handler != null &&
+                        (!toolRegistry.needsConfirmation(handler) ||
+                            requestApproval(conversationId, call, handler))
+                    var outcome: String? = null
+                    val output = when {
+                        handler == null -> {
+                            outcome = TOOL_FAILED
+                            "Unknown tool \"${call.name}\"."
+                        }
+                        !approved -> {
+                            outcome = TOOL_DECLINED
+                            "The user declined this action."
+                        }
+                        else -> try {
+                            handler.run(call.arguments())
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (failure: Throwable) {
+                            AppLog.e(TAG, "tool ${call.name} failed", failure)
+                            outcome = TOOL_FAILED
+                            "The tool failed: " +
+                                (failure.message ?: failure::class.java.simpleName)
+                        }
+                    }
+                    insertToolResult(conversationId, call, output, outcome)
+                }
+                turn++
+                currentReplyId = spawnAssistantRow(conversationId, target)
+            } catch (cancelledEx: CancellationException) {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    if (!rowFinalized) {
+                        if (content.isEmpty()) {
+                            conversations.deleteMessage(currentReplyId)
+                        } else {
+                            conversations.finalizeMessage(
+                                messageId = currentReplyId,
+                                status = MessageStatus.PARTIAL,
+                                content = content.toString(),
+                                reasoning = reasoning.toString().ifBlank { null },
+                                usage = usage,
+                                finishReason = "stopped",
+                                errorKind = ChatErrorKind.CANCELLED.name,
+                                errorDetail = null,
+                                updatedAt = System.currentTimeMillis()
+                            )
+                        }
+                    }
+                }
+                throw cancelledEx
+            } catch (chatError: ChatError) {
+                if (shouldDowngrade(chatError, toolsAllowed, downgraded, content, toolCalls)) {
+                    downgraded = true
+                    toolsAllowed = false
+                    markToolsRejected(target.providerConfig.id)
+                    continue
+                }
+                persistFailure(currentReplyId, content, reasoning, chatError)
+                return
+            } catch (unexpected: Throwable) {
+                AppLog.e(TAG, "unexpected generation failure", unexpected)
+                persistFailure(
+                    currentReplyId,
+                    content,
+                    reasoning,
+                    ChatError.Unknown(unexpected, unexpected.message)
+                )
+                return
             }
-            throw cancelledEx
-        } catch (chatError: ChatError) {
-            persistFailure(replyId, content, reasoning, chatError)
-        } catch (unexpected: Throwable) {
-            AppLog.e(TAG, "unexpected generation failure", unexpected)
-            persistFailure(
-                replyId,
-                content,
-                reasoning,
-                ChatError.Unknown(unexpected, unexpected.message)
-            )
         }
+    }
+
+    /**
+     * True when a failure smells like "this endpoint does not accept tools"
+     * and a plain retry can still save the turn.
+     */
+    private fun shouldDowngrade(
+        error: ChatError,
+        toolsAllowed: Boolean,
+        alreadyDowngraded: Boolean,
+        content: StringBuilder,
+        toolCalls: List<ToolCall>
+    ): Boolean {
+        if (!toolsAllowed || alreadyDowngraded) return false
+        if (content.isNotEmpty() || toolCalls.isNotEmpty()) return false
+        return error is ChatError.BadRequest ||
+            error is ChatError.Malformed ||
+            error is ChatError.EmptyResponse
+    }
+
+    /** Reassembles indexed SSE fragments into one tool call. */
+    private class ToolCallAccumulator(
+        var id: String? = null,
+        var name: String? = null,
+        val arguments: StringBuilder = StringBuilder()
+    ) {
+        fun toToolCall(): ToolCall? {
+            val toolName = name ?: return null
+            val callId = id ?: "call_${toolName.hashCode()}_${arguments.length}"
+            return ToolCall(id = callId, name = toolName, argumentsJson = arguments.toString())
+        }
+    }
+
+    /** Inserts the empty STREAMING assistant row a turn streams into. */
+    private suspend fun spawnAssistantRow(
+        conversationId: String,
+        target: GenerationTarget
+    ): String {
+        val newReplyId = Ids.newId()
+        // Keep insertion strictly after the latest existing row so the
+        // (createdAt, id) ordering always reads replies below the user turn.
+        val lastAt = conversations.observeMessages(conversationId)
+            .first().lastOrNull()?.createdAt ?: 0L
+        val now = maxOf(System.currentTimeMillis(), lastAt + 1)
+        conversations.insertMessage(
+            Message(
+                id = newReplyId,
+                conversationId = conversationId,
+                role = MessageRole.ASSISTANT,
+                content = "",
+                createdAt = now,
+                status = MessageStatus.STREAMING,
+                modelId = target.modelId,
+                providerId = target.providerConfig.id
+            )
+        )
+        return newReplyId
+    }
+
+    /**
+     * Persists one tool result as a TOOL row the next request can replay.
+     *
+     * @param errorKind null when the tool ran, [TOOL_DECLINED] when the user
+     * said no, [TOOL_FAILED] when it broke — the UI renders those as status.
+     */
+    private suspend fun insertToolResult(
+        conversationId: String,
+        call: ToolCall,
+        output: String,
+        errorKind: String? = null
+    ) {
+        val lastAt = conversations.observeMessages(conversationId)
+            .first().lastOrNull()?.createdAt ?: 0L
+        val now = maxOf(System.currentTimeMillis(), lastAt + 1)
+        conversations.insertMessage(
+            Message(
+                id = Ids.newId(),
+                conversationId = conversationId,
+                role = MessageRole.TOOL,
+                content = output,
+                createdAt = now,
+                status = MessageStatus.SUCCESS,
+                errorKind = errorKind,
+                toolCallId = call.id,
+                toolName = call.name
+            )
+        )
     }
 
     private suspend fun persistFailure(
@@ -368,7 +609,8 @@ class StreamingChatEngine(
     private suspend fun buildPayload(
         conversation: Conversation,
         snapshot: SettingsSnapshot,
-        target: GenerationTarget
+        target: GenerationTarget,
+        agentTools: List<AgentTool>
     ): ChatPayload {
         val systemPrompt = conversation.systemPrompt
             ?.takeIf { it.isNotBlank() }
@@ -381,9 +623,27 @@ class StreamingChatEngine(
             messages += ChatMessage(role = ChatMessageRole.SYSTEM, text = systemPrompt)
         }
 
+        // Tool pairing: every call an assistant message declares must be
+        // answered by TOOL messages immediately after it, or the provider
+        // rejects the whole request. Calls left unanswered (the user stopped
+        // the agent mid-run, or a row was edited away) get a synthetic answer.
+        val awaitingResults = LinkedHashSet<String>()
+
+        fun answerUnansweredCalls() {
+            awaitingResults.forEach { callId ->
+                messages += ChatMessage(
+                    role = ChatMessageRole.TOOL,
+                    text = INTERRUPTED_TOOL_RESULT,
+                    toolCallId = callId
+                )
+            }
+            awaitingResults.clear()
+        }
+
         rows.forEach { row ->
             when (row.role) {
                 MessageRole.USER -> {
+                    answerUnansweredCalls()
                     if (row.content.isNotBlank() || hasAttachments(row.id)) {
                         val (text, images2, pdfs) = withUserAttachments(row)
                         messages += ChatMessage(
@@ -395,12 +655,52 @@ class StreamingChatEngine(
                     }
                 }
                 MessageRole.ASSISTANT -> {
-                    if (row.status != MessageStatus.SUCCESS || row.content.isBlank()) return@forEach
-                    messages += ChatMessage(role = ChatMessageRole.ASSISTANT, text = row.content)
+                    val calls = row.toolCalls?.let { stored ->
+                        runCatching { Json.decodeFromString<List<ToolCall>>(stored) }
+                            .getOrNull()
+                            ?.takeIf { it.isNotEmpty() }
+                    }
+                    when {
+                        calls != null -> {
+                            answerUnansweredCalls()
+                            messages += ChatMessage(
+                                role = ChatMessageRole.ASSISTANT,
+                                text = row.content.ifBlank { null },
+                                toolCalls = calls.map { call ->
+                                    ToolCallRequest(
+                                        id = call.id,
+                                        name = call.name,
+                                        argumentsJson = call.argumentsJson
+                                    )
+                                }
+                            )
+                            awaitingResults.addAll(calls.map { it.id })
+                        }
+                        row.status == MessageStatus.SUCCESS && row.content.isNotBlank() -> {
+                            answerUnansweredCalls()
+                            messages += ChatMessage(
+                                role = ChatMessageRole.ASSISTANT,
+                                text = row.content
+                            )
+                        }
+                        else -> Unit // streaming / failed / partial rows are not replayed
+                    }
                 }
-                else -> Unit // SYSTEM/TOOL rows are ignored (system prompt handled above)
+                MessageRole.TOOL -> {
+                    val callId = row.toolCallId
+                    if (callId != null && awaitingResults.remove(callId)) {
+                        messages += ChatMessage(
+                            role = ChatMessageRole.TOOL,
+                            text = row.content,
+                            toolCallId = callId
+                        )
+                    }
+                    // Orphans (their assistant row was deleted) are dropped.
+                }
+                MessageRole.SYSTEM -> Unit // the prompt above owns this role
             }
         }
+        answerUnansweredCalls()
 
         checkCapabilities(messages, target)
 
@@ -411,7 +711,8 @@ class StreamingChatEngine(
             maxTokens = target.maxTokens,
             topP = target.topP,
             stream = target.streaming,
-            includeUsage = target.includeUsage
+            includeUsage = target.includeUsage,
+            tools = agentTools
         )
     }
 
@@ -495,5 +796,15 @@ class StreamingChatEngine(
     private companion object {
         const val TAG = "Engine"
         const val MAX_ATTACH_TEXT_CHARS = 6000
+
+        /** Tool-executing rounds allowed after one user message. */
+        const val MAX_AGENT_TURNS = 6
+
+        /** Answered for calls whose execution the user interrupted. */
+        const val INTERRUPTED_TOOL_RESULT = "The action was interrupted before it completed."
+
+        /** [Message.errorKind] markers for TOOL rows. */
+        const val TOOL_DECLINED = "DECLINED"
+        const val TOOL_FAILED = "FAILED"
     }
 }

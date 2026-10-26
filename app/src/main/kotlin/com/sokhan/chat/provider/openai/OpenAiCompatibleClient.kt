@@ -115,7 +115,7 @@ class OpenAiCompatibleClient(
     ): Flow<Result<ChatStreamEvent>> = flow {
         try {
             if (!payload.stream) {
-                emit(Result.success(nonStreamingChat(payload, context)))
+                nonStreamingChat(payload, context).forEach { emit(Result.success(it)) }
             } else {
                 streamChat(payload, context).collect { emit(it) }
             }
@@ -214,7 +214,8 @@ class OpenAiCompatibleClient(
                 maxTokens = payload.maxTokens,
                 topP = payload.topP,
                 frequencyPenalty = payload.frequencyPenalty,
-                presencePenalty = payload.presencePenalty
+                presencePenalty = payload.presencePenalty,
+                tools = payload.tools.takeIf { it.isNotEmpty() }?.toWireTools()
             )
         )
         val request = buildRequest(context, chatUrl(context))
@@ -224,6 +225,7 @@ class OpenAiCompatibleClient(
 
         var finishReason: String? = null
         var gotContent = false
+        var gotToolCalls = false
         var skipped: Int = 0
 
         streamingClient.sseDataFlow(request).collect { line ->
@@ -256,22 +258,44 @@ class OpenAiCompatibleClient(
                     gotContent = true
                     emit(Result.success(ChatStreamEvent.Delta(delta.content)))
                 }
+                delta.toolCalls?.forEach { call ->
+                    gotToolCalls = true
+                    emit(
+                        Result.success(
+                            ChatStreamEvent.ToolCallDelta(
+                                index = call.index ?: 0,
+                                id = call.id,
+                                name = call.function?.name,
+                                argumentsDelta = call.function?.arguments.orEmpty()
+                            )
+                        )
+                    )
+                }
             }
             choice.finishReason?.let { reason ->
                 finishReason = (reason as? JsonPrimitive)?.content ?: reason.toString()
             }
         }
-        AppLog.d("OpenAI", "stream done; skipped=$skipped finish=$finishReason")
-        if (!gotContent) {
+        AppLog.d(
+            "OpenAI",
+            "stream done; skipped=$skipped finish=$finishReason tools=$gotToolCalls"
+        )
+        // A tool-only turn (the model asked to act instead of writing text)
+        // is a valid response — only a truly empty one is an error.
+        if (!gotContent && !gotToolCalls) {
             throw ChatError.EmptyResponse
         }
         emit(Result.success(ChatStreamEvent.Finished(finishReason)))
     }
 
+    /**
+     * Non-streaming completion, normalised to the same event sequence the
+     * stream produces (reasoning → content / tool calls → usage → finished).
+     */
     private suspend fun nonStreamingChat(
         payload: ChatPayload,
         context: ProviderContext
-    ): ChatStreamEvent {
+    ): List<ChatStreamEvent> {
         val body = json.encodeToString(
             OpenAiChatRequestBody.serializer(),
             OpenAiChatRequestBody(
@@ -281,7 +305,8 @@ class OpenAiCompatibleClient(
                 maxTokens = payload.maxTokens,
                 topP = payload.topP,
                 frequencyPenalty = payload.frequencyPenalty,
-                presencePenalty = payload.presencePenalty
+                presencePenalty = payload.presencePenalty,
+                tools = payload.tools.takeIf { it.isNotEmpty() }?.toWireTools()
             )
         )
         val request = buildRequest(context, chatUrl(context))
@@ -296,12 +321,32 @@ class OpenAiCompatibleClient(
         val parsed = runCatching {
             json.decodeFromString(OpenAiCompletionResponse.serializer(), response.orEmpty())
         }.getOrNull() ?: throw ChatError.Malformed(parseErrorDetail(response))
-        val content = parsed.choices?.firstOrNull()?.message?.content.orEmpty()
-        val reasoning = parsed.choices?.firstOrNull()?.message?.let {
-            it.reasoningContent ?: it.reasoning
+        val choice = parsed.choices?.firstOrNull() ?: throw ChatError.Malformed(parseErrorDetail(response))
+        val content = choice.message?.content.orEmpty()
+        val reasoning = choice.message?.let { it.reasoningContent ?: it.reasoning }
+        val toolCalls = choice.message?.toolCalls.orEmpty()
+
+        val events = ArrayList<ChatStreamEvent>(4)
+        if (!reasoning.isNullOrBlank()) events += ChatStreamEvent.ReasoningDelta(reasoning)
+        if (content.isNotEmpty()) events += ChatStreamEvent.Delta(content)
+        toolCalls.forEachIndexed { index, call ->
+            events += ChatStreamEvent.ToolCallDelta(
+                index = index,
+                id = call.id,
+                name = call.function?.name,
+                argumentsDelta = call.function?.arguments.orEmpty()
+            )
         }
-        if (content.isBlank() && reasoning.isNullOrBlank()) throw ChatError.EmptyResponse
-        return ChatStreamEvent.Finished(parsed.choices?.firstOrNull()?.finishReason?.content)
+        parsed.usage?.let { usage ->
+            events += ChatStreamEvent.Usage(
+                UsageInfo(usage.promptTokens, usage.completionTokens, usage.totalTokens)
+            )
+        }
+        if (content.isBlank() && reasoning.isNullOrBlank() && toolCalls.isEmpty()) {
+            throw ChatError.EmptyResponse
+        }
+        events += ChatStreamEvent.Finished(choice.finishReason?.content)
+        return events
     }
 
     // ── Probe helpers (test connection) ──────────────────────────────────

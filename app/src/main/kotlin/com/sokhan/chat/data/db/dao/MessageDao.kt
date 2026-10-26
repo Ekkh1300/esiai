@@ -46,6 +46,10 @@ interface MessageDao {
     )
     suspend fun updateContent(id: String, content: String, reasoning: String?, updatedAt: Long)
 
+    /** Records the tool calls an assistant message made (agent mode). */
+    @Query("UPDATE messages SET toolCalls = :toolCalls WHERE id = :id")
+    suspend fun setToolCalls(id: String, toolCalls: String?)
+
     @Query(
         """
         UPDATE messages

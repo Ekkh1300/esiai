@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug builds may talk to plain-http dev endpoints: a local Ollama or
+  LM Studio, or a mock server running on the host machine (10.0.2.2).
+  Release builds keep the platform default, which blocks cleartext.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>

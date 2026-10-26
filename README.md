@@ -16,6 +16,11 @@ No accounts. No telemetry. No server component — your API keys stay in your po
   usage survive navigation, backgrounding and even process death via orphan recovery on restart).
 - **Assistants** — reusable personas (name, emoji, system prompt, model, temperature, streaming
   behaviour) you can one-tap into a new chat.
+- **Agent mode** — the model can run on-device actions through 12 built-in tools (change the
+  theme or language, search and manage conversations, send a message, export a backup …).
+  Anything that writes or deletes pauses for an explicit *Allow / Deny* dialog showing the
+  exact call and its arguments, and the outcome is kept in the conversation as a tool row.
+  Providers without tool support simply reply normally.
 - **Attachments** — images (gallery / camera), PDFs and plain text files where the configured model
   supports them, with graceful degradation and clear sizing errors.
 - **Markdown rendering** — headings, lists, links, emphasis, inline & fenced code with syntax

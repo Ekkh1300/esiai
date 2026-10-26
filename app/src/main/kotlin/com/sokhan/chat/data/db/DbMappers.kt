@@ -218,7 +218,10 @@ object DbMappers {
         },
         finishReason = finishReason,
         errorKind = errorKind,
-        errorDetail = errorDetail
+        errorDetail = errorDetail,
+        toolCalls = toolCalls,
+        toolCallId = toolCallId,
+        toolName = toolName
     )
 
     fun Message.toEntity(): MessageEntity = MessageEntity(
@@ -237,7 +240,10 @@ object DbMappers {
         usageTotalTokens = usage?.totalTokens,
         finishReason = finishReason,
         errorKind = errorKind,
-        errorDetail = errorDetail
+        errorDetail = errorDetail,
+        toolCalls = toolCalls,
+        toolCallId = toolCallId,
+        toolName = toolName
     )
 
     // ── Attachment ──────────────────────────────────────────────────────

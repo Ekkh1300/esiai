@@ -116,6 +116,10 @@ private class FakeConversationRepository : ConversationRepository {
         }
     }
 
+    override suspend fun attachToolCalls(messageId: String, toolCalls: String?) {
+        replaceMessage(messageId) { it.copy(toolCalls = toolCalls) }
+    }
+
     override suspend fun deleteMessage(messageId: String) {
         messages.values.forEach { it.removeAll { m -> m.id == messageId } }
     }

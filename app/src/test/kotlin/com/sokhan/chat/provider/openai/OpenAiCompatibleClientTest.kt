@@ -1,5 +1,6 @@
 package com.sokhan.chat.provider.openai
 
+import com.sokhan.chat.domain.agent.AgentTool
 import com.sokhan.chat.domain.model.ChatError
 import com.sokhan.chat.domain.model.ProviderConfig
 import com.sokhan.chat.provider.ChatMessage
@@ -10,6 +11,9 @@ import com.sokhan.chat.provider.ProviderContext
 import com.sokhan.chat.provider.UsageInfo
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -216,7 +220,7 @@ class OpenAiCompatibleClientTest {
     // ── Non-streaming chat ───────────────────────────────────────────────
 
     @Test
-    fun `non-streaming chat returns one Finished event`() = runTest {
+    fun `non-streaming chat normalises content usage and finish`() = runTest {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """{"id":"x","choices":[{"index":0,"message":{"role":"assistant","content":"blue"},"finish_reason":"stop"}],
@@ -224,8 +228,14 @@ class OpenAiCompatibleClientTest {
             )
         )
         val events = client.chatPayload(samplePayload.copy(stream = false), context()).toList().map { it.getOrThrow() }
-        assertEquals(1, events.size)
-        assertEquals(ChatStreamEvent.Finished("stop"), events.single())
+        assertEquals(
+            listOf(
+                ChatStreamEvent.Delta("blue"),
+                ChatStreamEvent.Usage(com.sokhan.chat.provider.UsageInfo(1, 1, 2)),
+                ChatStreamEvent.Finished("stop")
+            ),
+            events
+        )
     }
 
     @Test
@@ -237,5 +247,114 @@ class OpenAiCompatibleClientTest {
         val failures = results.filter { it.isFailure }
         assertTrue(failures.isNotEmpty())
         assertTrue(failures.first().exceptionOrNull() is ChatError.NotFound)
+    }
+
+    // ── Agent mode (function calling) ────────────────────────────────────
+
+    private fun agentPayload() = samplePayload.copy(
+        tools = listOf(
+            AgentTool(
+                name = "set_theme",
+                description = "Change the app theme",
+                parameters = buildJsonObject {
+                    put("type", "object")
+                    putJsonObject("properties") {
+                        putJsonObject("theme") { put("type", "string") }
+                    }
+                }
+            )
+        )
+    )
+
+    @Test
+    fun `request carries the tools array when the payload has tools`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"done"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        client.chatPayload(agentPayload(), context()).toList().map { it.getOrThrow() }
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue(body.contains("\"tools\":["))
+        assertTrue(body.contains("\"name\":\"set_theme\""))
+    }
+
+    @Test
+    fun `plain chats send no tools key at all`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"ok"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        client.chatPayload(samplePayload, context()).toList().map { it.getOrThrow() }
+        val body = server.takeRequest().body.readUtf8()
+        assertTrue(!body.contains("\"tools\""))
+    }
+
+    @Test
+    fun `streaming parses fragmented tool calls without failing as empty`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"set_theme","arguments":""}}]}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"the"}}]}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"me\":\"dark\"}"}}]}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(agentPayload(), context()).toList().map { it.getOrThrow() }
+        assertEquals(
+            listOf(
+                ChatStreamEvent.ToolCallDelta(0, "call_1", "set_theme", ""),
+                ChatStreamEvent.ToolCallDelta(0, null, null, "{\"the"),
+                ChatStreamEvent.ToolCallDelta(0, null, null, "me\":\"dark\"}"),
+                ChatStreamEvent.Finished("tool_calls")
+            ),
+            events
+        )
+    }
+
+    @Test
+    fun `a tool-only turn is a valid response`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"c1","function":{"name":"set_theme","arguments":"{}"}}]}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(agentPayload(), context()).toList().map { it.getOrThrow() }
+        assertTrue(events.none { it is ChatStreamEvent.Delta })
+        assertTrue(events.last() is ChatStreamEvent.Finished)
+    }
+
+    @Test
+    fun `non-streaming chat surfaces tool calls as deltas`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """{"id":"x","choices":[{"index":0,"message":{"role":"assistant","content":null,"tool_calls":[{"id":"c9","type":"function","function":{"name":"set_theme","arguments":"{\"theme\":\"light\"}"}}]},"finish_reason":"tool_calls"}],"model":"gpt-test"}"""
+            )
+        )
+        val events = client.chatPayload(agentPayload().copy(stream = false), context())
+            .toList().map { it.getOrThrow() }
+        assertEquals(
+            listOf(
+                ChatStreamEvent.ToolCallDelta(0, "c9", "set_theme", "{\"theme\":\"light\"}"),
+                ChatStreamEvent.Finished("tool_calls")
+            ),
+            events
+        )
     }
 }

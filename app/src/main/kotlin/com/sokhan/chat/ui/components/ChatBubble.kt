@@ -23,10 +23,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.School
@@ -50,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.sokhan.chat.R
+import com.sokhan.chat.domain.agent.ToolCall
 import com.sokhan.chat.domain.model.Attachment
 import com.sokhan.chat.domain.model.AttachmentKind
 import com.sokhan.chat.domain.model.Message
@@ -64,6 +69,8 @@ import java.util.Locale
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 /** Callbacks a chat row can trigger. */
 data class ChatMessageActions(
@@ -86,7 +93,14 @@ fun ChatMessageBubble(
     isStreaming: Boolean,
     actions: ChatMessageActions
 ) {
+    if (message.role == MessageRole.TOOL) {
+        // The agent acted: one quiet activity row instead of a chat bubble.
+        ToolActivityRow(message = message)
+        return
+    }
+
     val isUser = message.role == MessageRole.USER
+    val toolCalls = remember(message.id, message.toolCalls) { parseToolCalls(message.toolCalls) }
     var actionsOpen by remember(message.id) { mutableStateOf(false) }
 
     Column(
@@ -114,6 +128,10 @@ fun ChatMessageBubble(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp)
                 )
+            }
+            if (toolCalls.isNotEmpty()) {
+                ToolCallRows(calls = toolCalls)
+                Spacer(Modifier.height(5.dp))
             }
             Spacer(Modifier.height(6.dp))
         }
@@ -151,39 +169,48 @@ fun ChatMessageBubble(
                 }
             }
         } else {
-            // The assistant answers as a card: a paper surface with a
-            // hairline. The model chip above it carries the identity, so the
-            // card itself stays quiet.
-            Surface(
-                color = if (message.status == MessageStatus.ERROR) {
-                    MaterialTheme.colorScheme.errorContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                },
-                contentColor = if (message.status == MessageStatus.ERROR) {
-                    MaterialTheme.colorScheme.onErrorContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                shape = bubbleShape,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                modifier = Modifier
-                    .widthIn(max = 340.dp)
-                    .clip(bubbleShape)
-                    .clickable { actionsOpen = !actionsOpen }
-            ) {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 11.dp)) {
-                    BubbleContent(
-                        message = message,
-                        modelLabel = modelLabel,
-                        markdownEnabled = markdownEnabled,
-                        codeHighlighting = codeHighlighting,
-                        isStreaming = isStreaming,
-                        attachments = attachments,
-                        resolvedPath = resolvedPath,
-                        actions = actions,
-                        isUser = false
-                    )
+            // A tool-only turn (the model acted instead of writing) shows
+            // its activity rows above and no empty card below them.
+            val hasBody = message.content.isNotBlank() ||
+                !message.reasoning.isNullOrBlank() ||
+                attachments.isNotEmpty() ||
+                isStreaming ||
+                message.status == MessageStatus.ERROR
+            if (hasBody) {
+                // The assistant answers as a card: a paper surface with a
+                // hairline. The model chip above it carries the identity, so the
+                // card itself stays quiet.
+                Surface(
+                    color = if (message.status == MessageStatus.ERROR) {
+                        MaterialTheme.colorScheme.errorContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    },
+                    contentColor = if (message.status == MessageStatus.ERROR) {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    shape = bubbleShape,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier
+                        .widthIn(max = 340.dp)
+                        .clip(bubbleShape)
+                        .clickable { actionsOpen = !actionsOpen }
+                ) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 11.dp)) {
+                        BubbleContent(
+                            message = message,
+                            modelLabel = modelLabel,
+                            markdownEnabled = markdownEnabled,
+                            codeHighlighting = codeHighlighting,
+                            isStreaming = isStreaming,
+                            attachments = attachments,
+                            resolvedPath = resolvedPath,
+                            actions = actions,
+                            isUser = false
+                        )
+                    }
                 }
             }
         }
@@ -523,6 +550,149 @@ private fun usageLine(message: Message): String {
     usage.completionTokens?.let { parts.add("â†‘$it") }
     usage.totalTokens?.let { parts.add("~$it") }
     return parts.joinToString("  Â·  ")
+}
+
+// ── Agent mode ──────────────────────────────────────────────────────────
+
+/** Parses the tool calls an assistant message recorded (agent mode). */
+private fun parseToolCalls(stored: String?): List<ToolCall> =
+    stored?.let { json ->
+        runCatching { Json.decodeFromString<List<ToolCall>>(json) }.getOrNull()
+    }.orEmpty()
+
+/** Localised display name of a registered tool; raw id when unknown. */
+@Composable
+fun agentToolLabel(toolName: String?): String = when (toolName) {
+    "search_conversations" -> stringResource(R.string.agent_tool_search_conversations)
+    "read_conversation" -> stringResource(R.string.agent_tool_read_conversation)
+    "list_assistants" -> stringResource(R.string.agent_tool_list_assistants)
+    "list_providers" -> stringResource(R.string.agent_tool_list_providers)
+    "create_conversation" -> stringResource(R.string.agent_tool_create_conversation)
+    "rename_conversation" -> stringResource(R.string.agent_tool_rename_conversation)
+    "delete_conversation" -> stringResource(R.string.agent_tool_delete_conversation)
+    "send_message" -> stringResource(R.string.agent_tool_send_message)
+    "set_language" -> stringResource(R.string.agent_tool_set_language)
+    "set_theme" -> stringResource(R.string.agent_tool_set_theme)
+    "set_dynamic_colors" -> stringResource(R.string.agent_tool_set_dynamic_colors)
+    "export_backup" -> stringResource(R.string.agent_tool_export_backup)
+    else -> toolName ?: "?"
+}
+
+/** What the model did before answering: one quiet row per tool call. */
+@Composable
+private fun ToolCallRows(calls: List<ToolCall>) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        calls.forEach { call ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Bolt,
+                        contentDescription = null,
+                        modifier = Modifier.padding(4.dp),
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+                Text(
+                    text = agentToolLabel(call.name),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+/** One executed tool: label, status glyph and a peek at its result. */
+@Composable
+private fun ToolActivityRow(message: Message) {
+    val declined = message.errorKind == "DECLINED"
+    val failed = message.errorKind == "FAILED"
+    val rowShape = RoundedCornerShape(14.dp)
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = rowShape,
+        modifier = Modifier
+            .widthIn(max = 340.dp)
+            .clip(rowShape)
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = when {
+                        declined -> MaterialTheme.colorScheme.surfaceContainerHighest
+                        failed -> MaterialTheme.colorScheme.errorContainer
+                        else -> MaterialTheme.colorScheme.tertiaryContainer
+                    },
+                    modifier = Modifier.size(20.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Bolt,
+                        contentDescription = null,
+                        modifier = Modifier.padding(4.dp),
+                        tint = when {
+                            declined -> MaterialTheme.colorScheme.onSurfaceVariant
+                            failed -> MaterialTheme.colorScheme.onErrorContainer
+                            else -> MaterialTheme.colorScheme.onTertiaryContainer
+                        }
+                    )
+                }
+                Text(
+                    text = agentToolLabel(message.toolName),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f)
+                )
+                Spacer(Modifier.width(6.dp))
+                Icon(
+                    imageVector = when {
+                        declined -> Icons.Filled.Cancel
+                        failed -> Icons.Filled.ErrorOutline
+                        else -> Icons.Filled.CheckCircle
+                    },
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = when {
+                        declined -> MaterialTheme.colorScheme.onSurfaceVariant
+                        failed -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.secondary
+                    }
+                )
+            }
+            if (declined) {
+                Text(
+                    text = stringResource(R.string.agent_row_declined),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            } else if (message.content.isNotBlank()) {
+                Text(
+                    text = message.content,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (failed) {
+                        MaterialTheme.colorScheme.onErrorContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
+    }
 }
 
 /** HH:mm for today/yesterday; otherwise date (locale aware). */

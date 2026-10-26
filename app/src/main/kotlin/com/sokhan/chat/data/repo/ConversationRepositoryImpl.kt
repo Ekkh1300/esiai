@@ -144,6 +144,10 @@ class ConversationRepositoryImpl(
         messageDao.get(messageId)?.let { conversationDao.touch(it.conversationId, updatedAt) }
     }
 
+    override suspend fun attachToolCalls(messageId: String, toolCalls: String?) {
+        messageDao.setToolCalls(messageId, toolCalls)
+    }
+
     override suspend fun deleteMessage(messageId: String) {
         messageDao.delete(messageId)
     }

@@ -17,6 +17,7 @@ import com.sokhan.chat.domain.repository.AttachmentRepository
 import com.sokhan.chat.domain.repository.ChatEngine
 import com.sokhan.chat.domain.repository.ConversationRepository
 import com.sokhan.chat.domain.repository.ModelRepository
+import com.sokhan.chat.domain.repository.PendingToolAction
 import com.sokhan.chat.domain.repository.ProviderRepository
 import com.sokhan.chat.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +56,16 @@ class ChatViewModel(
         settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, SettingsSnapshot())
 
     val streamState = engine.streamState
+
+    /** Tool calls this conversation is waiting to run (agent mode). */
+    val pendingToolActions: StateFlow<List<PendingToolAction>> = engine.pendingToolActions
+        .map { list -> list.filter { it.conversationId == conversationId } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Approves or declines the pending tool call shown in the dialog. */
+    fun respondToTool(callId: String, approved: Boolean) {
+        engine.respondToToolAction(callId, approved)
+    }
 
     /** Drafts attached to the composer, not yet sent. */
     private val drafts = MutableStateFlow<List<Attachment>>(emptyList())

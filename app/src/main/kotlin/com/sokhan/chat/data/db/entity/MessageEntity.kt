@@ -38,5 +38,11 @@ data class MessageEntity(
     val usageTotalTokens: Int? = null,
     val finishReason: String? = null,
     val errorKind: String? = null,
-    val errorDetail: String? = null
+    val errorDetail: String? = null,
+    /** JSON array of tool calls made by an assistant message (agent mode). */
+    val toolCalls: String? = null,
+    /** For `role = "TOOL"` rows: the call id this result answers. */
+    val toolCallId: String? = null,
+    /** For `role = "TOOL"` rows: the tool that produced this result. */
+    val toolName: String? = null
 )

@@ -20,7 +20,13 @@ data class SettingsSnapshot(
     val codeHighlighting: Boolean = true,
     val autoScroll: Boolean = true,
     val enterSends: Boolean = false,
-    val onboardingSeen: Boolean = false
+    val onboardingSeen: Boolean = false,
+    /**
+     * Agent mode: expose the app's own tools (search, rename, theme, backup…)
+     * to the model so it can act instead of only talk. The request degrades to
+     * a plain chat automatically when the endpoint does not accept `tools`.
+     */
+    val agentMode: Boolean = true
 )
 
 enum class ThemeMode(val key: String) {

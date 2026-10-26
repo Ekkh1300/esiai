@@ -76,6 +76,14 @@ the side that faces the other speaker.
 - **Conversation row** — avatar tile, title, preview, timestamp, overflow icon.
 - **Settings row** — icon in a 34 dp tinted disc, title beside it.
 - **Empty state** — a soft two-tone disc, then the title, then the hint.
+- **Agent tool chips** — the calls the assistant wants to make, as small
+  pills with a spark glyph above the reply card; the label is localised.
+- **Tool activity row** — what happened to a call: a full-width pill with
+  the same glyph, the tool name, the result preview and a trailing state
+  disc — teal check when it ran, muted cross when the user declined.
+- **Confirmation dialog** — before anything writes or deletes: title, tool
+  label, pretty-printed arguments, then *Deny* and *Allow*; destructive
+  calls tint *Allow* with the error colour.
 
 ## RTL
 

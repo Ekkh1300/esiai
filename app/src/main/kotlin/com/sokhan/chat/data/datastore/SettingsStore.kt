@@ -63,6 +63,7 @@ class SettingsStore(
                 prefs[KEY_AUTO_SCROLL] = autoScroll
                 prefs[KEY_ENTER_SENDS] = enterSends
                 prefs[KEY_ONBOARDING] = onboardingSeen
+                prefs[KEY_AGENT_MODE] = agentMode
             }
         }
     }
@@ -95,7 +96,8 @@ class SettingsStore(
         codeHighlighting = this[KEY_HIGHLIGHTING] ?: true,
         autoScroll = this[KEY_AUTO_SCROLL] ?: true,
         enterSends = this[KEY_ENTER_SENDS] ?: false,
-        onboardingSeen = this[KEY_ONBOARDING] ?: false
+        onboardingSeen = this[KEY_ONBOARDING] ?: false,
+        agentMode = this[KEY_AGENT_MODE] ?: true
     )
 
     private companion object {
@@ -113,6 +115,7 @@ class SettingsStore(
         val KEY_AUTO_SCROLL = booleanPreferencesKey("auto_scroll")
         val KEY_ENTER_SENDS = booleanPreferencesKey("enter_sends")
         val KEY_ONBOARDING = booleanPreferencesKey("onboarding_seen")
+        val KEY_AGENT_MODE = booleanPreferencesKey("agent_mode")
 
         private val Context.settingsPreferences: DataStore<Preferences>
             by preferencesDataStore(name = "sokhan_settings")
