@@ -236,6 +236,9 @@ class OpenAiCompatibleClient(
                 skipped++
                 return@collect
             }
+            // OpenRouter streams provider failures in-band, after the headers
+            // already said 200. Surface them instead of timing out silently.
+            chunk.error?.let { throw mapInBandError(it) }
             chunk.usage?.let { usage ->
                 emit(
                     Result.success(
@@ -273,7 +276,7 @@ class OpenAiCompatibleClient(
                 }
             }
             choice.finishReason?.let { reason ->
-                finishReason = (reason as? JsonPrimitive)?.content ?: reason.toString()
+                finishReason = reason.content
             }
         }
         AppLog.d(

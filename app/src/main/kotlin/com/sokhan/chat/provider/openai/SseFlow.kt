@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -94,5 +96,26 @@ internal fun mapHttpStatusToError(code: Int, body: String?): ChatError {
         429 -> ChatError.RateLimit(detail ?: "rate limited")
         in 500..599 -> ChatError.Server(code, detail)
         else -> ChatError.Server(code, detail ?: "HTTP $code")
+    }
+}
+
+/**
+ * Maps an in-band SSE `error` object onto the taxonomy.
+ *
+ * OpenRouter sends provider failures inside an already-open `200` stream:
+ * `{"error":{"code":502,"message":"Provider returned error"}}`. They carry
+ * the same meanings as HTTP statuses, so reuse the same mapping.
+ */
+internal fun mapInBandError(error: JsonObject): ChatError {
+    val detail = (error["message"] as? JsonPrimitive)?.content
+        ?: (error["detail"] as? JsonPrimitive)?.content
+    val code = (error["code"] as? JsonPrimitive)?.content?.toIntOrNull()
+    return when {
+        code == null -> ChatError.Server(502, detail)
+        code == 401 || code == 403 -> ChatError.Auth(detail)
+        code == 404 -> ChatError.NotFound(detail)
+        code == 429 -> ChatError.RateLimit(detail)
+        code in 500..599 -> ChatError.Server(code, detail)
+        else -> ChatError.BadRequest(detail)
     }
 }

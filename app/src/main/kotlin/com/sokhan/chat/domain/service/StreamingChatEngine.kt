@@ -3,9 +3,9 @@ package com.sokhan.chat.domain.service
 import com.sokhan.chat.core.AppLog
 import com.sokhan.chat.core.DispatcherProvider
 import com.sokhan.chat.core.Ids
-import com.sokhan.chat.domain.agent.AgentTool
 import com.sokhan.chat.domain.agent.AgentToolHandler
 import com.sokhan.chat.domain.agent.AgentToolRegistry
+import com.sokhan.chat.domain.agent.TextToolProtocol
 import com.sokhan.chat.domain.agent.ToolCall
 import com.sokhan.chat.domain.model.AttachmentKind
 import com.sokhan.chat.domain.model.ChatError
@@ -148,17 +148,49 @@ class StreamingChatEngine(
         }.take(160)
 
     /**
-     * Endpoints that rejected a `tools` request this session: their
-     * conversations silently downgrade to plain chat instead of failing.
+     * Endpoint+model pairs that rejected a native `tools` request this
+     * session: those conversations silently switch to the text tool protocol
+     * (see [TextToolProtocol]) instead of failing. Keyed per model so one
+     * model that cannot take tools never poisons its siblings.
      */
-    private val toolsRejected = HashSet<String>()
+    private val nativeToolsBroken = HashSet<String>()
 
-    private fun toolsRejectedFor(providerId: String): Boolean =
-        synchronized(toolsRejected) { toolsRejected.contains(providerId) }
+    private fun toolsKey(target: GenerationTarget): String =
+        "${target.providerConfig.id}::${target.modelId}"
 
-    private fun markToolsRejected(providerId: String) {
-        synchronized(toolsRejected) { toolsRejected.add(providerId) }
-        AppLog.d(TAG, "endpoint rejected tools; agent disabled for provider=$providerId")
+    private fun nativeToolsBrokenFor(target: GenerationTarget): Boolean =
+        synchronized(nativeToolsBroken) { nativeToolsBroken.contains(toolsKey(target)) }
+
+    private fun markNativeToolsBroken(target: GenerationTarget) {
+        synchronized(nativeToolsBroken) { nativeToolsBroken.add(toolsKey(target)) }
+        AppLog.d(TAG, "native tools rejected; text protocol for ${toolsKey(target)}")
+    }
+
+    /**
+     * How agent mode talks to the model for one generation.
+     *
+     * NATIVE sends the provider's `tools` array; TEXT asks for a JSON block
+     * in the reply text and works with every chat model; OFF is plain chat.
+     */
+    private enum class ToolMode { NATIVE, TEXT, OFF }
+
+    /**
+     * The mode a fresh generation starts in for [target].
+     *
+     * Always try the provider's native `tools` array first: capability flags
+     * in the model row are only a heuristic guess from the id (and are off by
+     * default for user-added models), so trusting them silently downgraded
+     * perfectly capable models — OpenRouter routes in particular — to the
+     * text protocol, where many models never emit a call at all. A real
+     * rejection falls back at runtime instead (see [isToolRejection]).
+     */
+    private fun initialToolMode(
+        snapshot: SettingsSnapshot,
+        target: GenerationTarget
+    ): ToolMode = when {
+        !snapshot.agentMode -> ToolMode.OFF
+        nativeToolsBrokenFor(target) -> ToolMode.TEXT
+        else -> ToolMode.NATIVE
     }
 
     // ── ChatEngine ───────────────────────────────────────────────────────
@@ -292,9 +324,11 @@ class StreamingChatEngine(
         target: GenerationTarget
     ) {
         val snapshot: SettingsSnapshot = settings.settings.value
-        // Agent mode: tools ride along with the request until an endpoint
-        // proves it cannot handle them (one silent downgrade per generation).
-        var toolsAllowed = snapshot.agentMode && !toolsRejectedFor(target.providerConfig.id)
+        // Agent mode picks how it talks to the model: native `tools` when the
+        // model looks capable, the text tool protocol when it is not (or when
+        // the endpoint already rejected tools this session), plain chat after
+        // both were refused. One silent downgrade per generation.
+        var mode = initialToolMode(snapshot, target)
         var downgraded = false
         var turn = 0
         var currentReplyId = replyId
@@ -327,7 +361,7 @@ class StreamingChatEngine(
                     conversation = conversation,
                     snapshot = snapshot,
                     target = target,
-                    agentTools = if (toolsAllowed) toolRegistry.tools else emptyList()
+                    mode = mode
                 )
                 val client = clientFactory.clientFor(target.providerConfig.kind)
                 val context = ProviderContext(
@@ -368,6 +402,19 @@ class StreamingChatEngine(
                     )
                 }
                 toolCalls = fragments.values.mapNotNull { it.toToolCall() }
+                // Safety net: the reply may carry a JSON tool block even when
+                // native tools were offered (the endpoint dropped them, or the
+                // model ignores them). Only registered names count, so random
+                // JSON inside an answer is never mistaken for a call.
+                if (mode != ToolMode.OFF && toolCalls.isEmpty()) {
+                    TextToolProtocol.parse(content.toString())
+                        ?.takeIf { toolRegistry.find(it.call.name) != null }
+                        ?.let { parsed ->
+                            toolCalls = listOf(parsed.call)
+                            content.setLength(0)
+                            content.append(parsed.cleanedText)
+                        }
+                }
 
                 withContext(NonCancellable + Dispatchers.IO) {
                     flush(force = true)
@@ -402,7 +449,7 @@ class StreamingChatEngine(
                 if (toolCalls.isEmpty()) return
 
                 // ── Agent round: run what the model asked for ────────────
-                if (!toolsAllowed || turn >= MAX_AGENT_TURNS) {
+                if (mode == ToolMode.OFF || turn >= MAX_AGENT_TURNS) {
                     // The calls stay recorded so the UI can show them, and
                     // buildPayload answers them synthetically if we stop here.
                     AppLog.d(TAG, "agent stops before running tools turn=$turn")
@@ -460,10 +507,20 @@ class StreamingChatEngine(
                 }
                 throw cancelledEx
             } catch (chatError: ChatError) {
-                if (shouldDowngrade(chatError, toolsAllowed, downgraded, content, toolCalls)) {
+                if (mode != ToolMode.OFF && !downgraded &&
+                    isToolRejection(chatError, content.isNotEmpty(), toolCalls.isNotEmpty())
+                ) {
                     downgraded = true
-                    toolsAllowed = false
-                    markToolsRejected(target.providerConfig.id)
+                    when (mode) {
+                        ToolMode.NATIVE -> {
+                            // The endpoint refuses the `tools` array — retry the
+                            // same turn through the text protocol.
+                            markNativeToolsBroken(target)
+                            mode = if (snapshot.agentMode) ToolMode.TEXT else ToolMode.OFF
+                        }
+                        // Even the text instructions were rejected: plain chat.
+                        else -> mode = ToolMode.OFF
+                    }
                     continue
                 }
                 persistFailure(currentReplyId, content, reasoning, chatError)
@@ -482,22 +539,19 @@ class StreamingChatEngine(
     }
 
     /**
-     * True when a failure smells like "this endpoint does not accept tools"
-     * and a plain retry can still save the turn.
+     * True when a failure smells like "this request shape is wrong for this
+     * endpoint" and retrying in a simpler tool mode can still save the turn.
+     *
+     * Providers signal "I cannot take `tools`" in several different ways:
+     *  - `400` / `422` — OpenAI, llama.cpp and friends reject the payload;
+     *  - `404` — OpenRouter answers "No endpoints found that support tool use";
+     *  - `200` with an empty stream — some gateways silently drop the array.
      */
-    private fun shouldDowngrade(
+    private fun isToolRejection(
         error: ChatError,
-        toolsAllowed: Boolean,
-        alreadyDowngraded: Boolean,
-        content: StringBuilder,
-        toolCalls: List<ToolCall>
-    ): Boolean {
-        if (!toolsAllowed || alreadyDowngraded) return false
-        if (content.isNotEmpty() || toolCalls.isNotEmpty()) return false
-        return error is ChatError.BadRequest ||
-            error is ChatError.Malformed ||
-            error is ChatError.EmptyResponse
-    }
+        hasContent: Boolean,
+        hasToolCalls: Boolean
+    ): Boolean = isToolRejectionFor(error, hasContent, hasToolCalls)
 
     /** Reassembles indexed SSE fragments into one tool call. */
     private class ToolCallAccumulator(
@@ -610,11 +664,29 @@ class StreamingChatEngine(
         conversation: Conversation,
         snapshot: SettingsSnapshot,
         target: GenerationTarget,
-        agentTools: List<AgentTool>
+        mode: ToolMode
     ): ChatPayload {
-        val systemPrompt = conversation.systemPrompt
+        val textProtocol = mode == ToolMode.TEXT
+        val agentTools = if (mode == ToolMode.NATIVE) {
+            toolRegistry.tools
+        } else {
+            emptyList()
+        }
+        val basePrompt = conversation.systemPrompt
             ?.takeIf { it.isNotBlank() }
             ?: snapshot.defaultSystemPrompt
+        // One system message only: some endpoints reject a second SYSTEM row,
+        // so the protocol rules ride along inside the same prompt — in BOTH
+        // modes, so an endpoint that silently drops `tools` still gets told
+        // how the model can act, and a model that ignores native tools has a
+        // second mechanism to fall back on.
+        val systemPrompt: String? = when {
+            mode == ToolMode.OFF -> basePrompt
+            else -> listOfNotNull(
+                basePrompt?.takeIf { it.isNotBlank() },
+                TextToolProtocol.instruction(toolRegistry.tools, native = !textProtocol)
+            ).joinToString("\n\n")
+        }
 
         val rows = conversations.observeMessages(conversation.id).first()
 
@@ -631,11 +703,18 @@ class StreamingChatEngine(
 
         fun answerUnansweredCalls() {
             awaitingResults.forEach { callId ->
-                messages += ChatMessage(
-                    role = ChatMessageRole.TOOL,
-                    text = INTERRUPTED_TOOL_RESULT,
-                    toolCallId = callId
-                )
+                messages += if (textProtocol) {
+                    ChatMessage(
+                        role = ChatMessageRole.USER,
+                        text = TextToolProtocol.renderResult(null, INTERRUPTED_TOOL_RESULT)
+                    )
+                } else {
+                    ChatMessage(
+                        role = ChatMessageRole.TOOL,
+                        text = INTERRUPTED_TOOL_RESULT,
+                        toolCallId = callId
+                    )
+                }
             }
             awaitingResults.clear()
         }
@@ -663,17 +742,32 @@ class StreamingChatEngine(
                     when {
                         calls != null -> {
                             answerUnansweredCalls()
-                            messages += ChatMessage(
-                                role = ChatMessageRole.ASSISTANT,
-                                text = row.content.ifBlank { null },
-                                toolCalls = calls.map { call ->
-                                    ToolCallRequest(
-                                        id = call.id,
-                                        name = call.name,
-                                        argumentsJson = call.argumentsJson
-                                    )
+                            if (textProtocol) {
+                                // Replay the calls as the same text blocks the
+                                // model wrote, so the endpoint sees no tool role.
+                                val block = calls.joinToString("\n") {
+                                    TextToolProtocol.renderCall(it)
                                 }
-                            )
+                                messages += ChatMessage(
+                                    role = ChatMessageRole.ASSISTANT,
+                                    text = listOfNotNull(
+                                        row.content.ifBlank { null },
+                                        block
+                                    ).joinToString("\n\n")
+                                )
+                            } else {
+                                messages += ChatMessage(
+                                    role = ChatMessageRole.ASSISTANT,
+                                    text = row.content.ifBlank { null },
+                                    toolCalls = calls.map { call ->
+                                        ToolCallRequest(
+                                            id = call.id,
+                                            name = call.name,
+                                            argumentsJson = call.argumentsJson
+                                        )
+                                    }
+                                )
+                            }
                             awaitingResults.addAll(calls.map { it.id })
                         }
                         row.status == MessageStatus.SUCCESS && row.content.isNotBlank() -> {
@@ -689,11 +783,18 @@ class StreamingChatEngine(
                 MessageRole.TOOL -> {
                     val callId = row.toolCallId
                     if (callId != null && awaitingResults.remove(callId)) {
-                        messages += ChatMessage(
-                            role = ChatMessageRole.TOOL,
-                            text = row.content,
-                            toolCallId = callId
-                        )
+                        messages += if (textProtocol) {
+                            ChatMessage(
+                                role = ChatMessageRole.USER,
+                                text = TextToolProtocol.renderResult(row.toolName, row.content)
+                            )
+                        } else {
+                            ChatMessage(
+                                role = ChatMessageRole.TOOL,
+                                text = row.content,
+                                toolCallId = callId
+                            )
+                        }
                     }
                     // Orphans (their assistant row was deleted) are dropped.
                 }
@@ -807,4 +908,30 @@ class StreamingChatEngine(
         const val TOOL_DECLINED = "DECLINED"
         const val TOOL_FAILED = "FAILED"
     }
+}
+
+/**
+ * True when a failure means "this endpoint cannot take a `tools` array" and
+ * the same turn can be retried without one.
+ *
+ * Providers report it inconsistently:
+ *  - `400` / `422` — OpenAI, llama.cpp and most compatible servers reject the
+ *    payload outright;
+ *  - `404` — OpenRouter answers "No endpoints found that support tool use"
+ *    for models whose routes do not implement tool calling;
+ *  - `200` with an empty stream — some gateways silently drop the field.
+ *
+ * A turn that already produced text or a tool call is never retried: the user
+ * has seen part of an answer and repeating it would duplicate output.
+ */
+internal fun isToolRejectionFor(
+    error: ChatError,
+    hasContent: Boolean,
+    hasToolCalls: Boolean
+): Boolean {
+    if (hasContent || hasToolCalls) return false
+    return error is ChatError.BadRequest ||
+        error is ChatError.NotFound ||
+        error is ChatError.Malformed ||
+        error is ChatError.EmptyResponse
 }

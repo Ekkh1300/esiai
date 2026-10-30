@@ -195,7 +195,13 @@ internal data class OpenAiUsage(
 internal data class OpenAiStreamChunk(
     val id: String? = null,
     val choices: List<OpenAiStreamChoice>? = null,
-    val usage: OpenAiUsage? = null
+    val usage: OpenAiUsage? = null,
+    /**
+     * OpenRouter (and some gateways) report provider failures in-band, inside
+     * an HTTP 200 stream: `{"error":{"code":502,"message":"…"}}`. Ignoring it
+     * would surface as a confusing `EmptyResponse`.
+     */
+    val error: JsonObject? = null
 )
 
 @Serializable

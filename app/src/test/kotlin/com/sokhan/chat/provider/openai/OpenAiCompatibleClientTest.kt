@@ -340,6 +340,80 @@ class OpenAiCompatibleClientTest {
         assertTrue(events.last() is ChatStreamEvent.Finished)
     }
 
+    // ── OpenRouter compatibility ─────────────────────────────────────────
+
+    @Test
+    fun `a 404 on a tool request surfaces the provider detail`() = runTest {
+        // OpenRouter answers this for models whose routes do not implement
+        // tool calling; the engine relies on the NotFound type to fall back.
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody(
+                """{"error":{"code":404,"message":"No endpoints found that support tool use."}}"""
+            )
+        )
+        val results = client.chatPayload(agentPayload(), context()).toList()
+        val failure = results.firstOrNull { it.isFailure }?.exceptionOrNull()
+        assertTrue(failure is ChatError.NotFound)
+        assertTrue(failure?.message.orEmpty().contains("tool use"))
+    }
+
+    @Test
+    fun `streaming surfaces an in-band provider error`() = runTest {
+        // OpenRouter reports provider failures inside a 200 SSE stream.
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"partial"}}]}""",
+                    """data: {"error":{"code":502,"message":"Provider returned error"}}"""
+                )
+            )
+        )
+        val results = client.chatPayload(samplePayload, context()).toList()
+        val failure = results.firstOrNull { it.isFailure }?.exceptionOrNull()
+        assertTrue(failure is ChatError.Server)
+        assertEquals(502, (failure as ChatError.Server).code)
+        assertEquals("Provider returned error", failure.detail)
+    }
+
+    @Test
+    fun `an in-band 404 becomes a not-found error`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"error":{"code":404,"message":"No endpoints found that support tool use."}}"""
+                )
+            )
+        )
+        val results = client.chatPayload(agentPayload(), context()).toList()
+        val failure = results.firstOrNull { it.isFailure }?.exceptionOrNull()
+        assertTrue(failure is ChatError.NotFound)
+    }
+
+    @Test
+    fun `OpenRouter keepalive comments and a usage-only chunk do not break the stream`() = runTest {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    ": OPENROUTER PROCESSING",
+                    """data: {"choices":[{"index":0,"delta":{"content":"ok"}}]}""",
+                    ": OPENROUTER PROCESSING",
+                    """data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":1,"total_tokens":4}}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+        val events = client.chatPayload(samplePayload, context()).toList().map { it.getOrThrow() }
+        assertEquals(
+            listOf(
+                ChatStreamEvent.Delta("ok"),
+                ChatStreamEvent.Usage(UsageInfo(3, 1, 4)),
+                ChatStreamEvent.Finished("stop")
+            ),
+            events
+        )
+    }
+
     @Test
     fun `non-streaming chat surfaces tool calls as deltas`() = runTest {
         server.enqueue(
