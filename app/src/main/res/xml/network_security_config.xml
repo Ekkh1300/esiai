@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release builds speak HTTPS to everything except the loopback addresses where
+  a local OpenAI-compatible server (LM Studio, llama.cpp, a proxy) usually
+  listens. Those packets never leave the device, and the emulator host alias
+  (10.0.2.2) is the same thing from an AVD.
+
+  Debug builds override this file with a permissive policy so LAN endpoints
+  keep working during development.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

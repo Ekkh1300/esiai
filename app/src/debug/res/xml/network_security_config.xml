@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug: allow plain http to any host so a mock server or a LAN box
+  (192.168.x.x:11434, 10.0.2.2:8787, …) is reachable without TLS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

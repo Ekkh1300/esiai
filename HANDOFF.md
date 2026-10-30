@@ -279,6 +279,9 @@
 - `provider/openai/OpenAiDtos.kt` — فیلد `error` در `OpenAiStreamChunk`
 - `provider/ModelHeuristics.kt` — فهرست خانواده‌های ابزاردار به‌روز (فقط برای چیپ‌های UI)
 - `domain/agent/TextToolProtocol.kt` — باز کردن `arguments` رشته‌ای
+- `res/xml/network_security_config.xml` (+ نسخهٔ `debug/`) — نسخهٔ release حالا cleartext را
+  فقط برای `localhost` / `127.0.0.1` / `10.0.2.2` اجازه می‌دهد؛ یعنی پروکسی یا سرور محلی
+  (مثل همان `localhost:20128` سشن ۳) در بیلد release هم کار می‌کند، بقیهٔ دنیا همچنان HTTPS
 
 **تست‌های جدید:** `ToolFallbackPolicyTest` (۳) + ۴ تست OpenRouter در `OpenAiCompatibleClientTest`
 (۴۰۴ ابزار، خطای in-band، ۴۰۴ درون‌باند، کامنت `: OPENROUTER PROCESSING` + چانک usage با
