@@ -59,6 +59,7 @@ import com.sokhan.chat.domain.model.AttachmentKind
 import com.sokhan.chat.domain.model.Message
 import java.io.File
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 
 /**
  * Input bar with draft attachment strip, attach menu (gallery / camera /
@@ -109,7 +110,14 @@ fun ChatComposer(
     }
 
     Surface(tonalElevation = 2.dp) {
-        Column(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                // Edge-to-edge (and Android 15+, where adjustResize is ignored)
+                // leaves the IME floating over the window — without this the
+                // keyboard covers the text field while typing.
+                .imePadding()
+        ) {
             // Attachment drafts
             if (draftAttachments.isNotEmpty()) {
                 Row(

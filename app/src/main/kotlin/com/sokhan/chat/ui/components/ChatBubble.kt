@@ -546,10 +546,10 @@ private fun StreamingCursor() {
 private fun usageLine(message: Message): String {
     val usage = message.usage ?: return ""
     val parts = mutableListOf<String>()
-    usage.promptTokens?.let { parts.add("â†“$it") }
-    usage.completionTokens?.let { parts.add("â†‘$it") }
+    usage.promptTokens?.let { parts.add("↓$it") }
+    usage.completionTokens?.let { parts.add("↑$it") }
     usage.totalTokens?.let { parts.add("~$it") }
-    return parts.joinToString("  Â·  ")
+    return parts.joinToString("  ·  ")
 }
 
 // ── Agent mode ──────────────────────────────────────────────────────────
@@ -706,7 +706,7 @@ fun momentLabel(epochMillis: Long): String {
         LocalDate.now() -> time
         LocalDate.now().minusDays(1) -> stringResource(R.string.time_yesterday) + " " + time
         else -> DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
-            .format(Instant.ofEpochMilli(epochMillis).atZone(zone)) + " Â· " + time
+            .format(Instant.ofEpochMilli(epochMillis).atZone(zone)) + " · " + time
     }
 }
 

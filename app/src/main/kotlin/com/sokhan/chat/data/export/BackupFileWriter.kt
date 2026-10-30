@@ -25,14 +25,14 @@ class BackupFileWriter(private val context: Context) {
     /** @return a human-readable location the model can quote back. */
     suspend fun write(json: String): String = withContext(Dispatchers.IO) {
         val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
-        val name = "esiai-backup-$stamp.json"
+        val name = "esi-agent-backup-$stamp.json"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                 put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
                 put(
                     MediaStore.MediaColumns.RELATIVE_PATH,
-                    Environment.DIRECTORY_DOWNLOADS + "/ESIAI"
+                    Environment.DIRECTORY_DOWNLOADS + "/ESI Agent"
                 )
             }
             val uri = context.contentResolver
@@ -41,7 +41,7 @@ class BackupFileWriter(private val context: Context) {
             context.contentResolver.openOutputStream(uri)?.use { out ->
                 out.write(json.toByteArray(Charsets.UTF_8))
             } ?: throw IllegalStateException("Could not open $name for writing")
-            "${Environment.DIRECTORY_DOWNLOADS}/ESIAI/$name"
+            "${Environment.DIRECTORY_DOWNLOADS}/ESI Agent/$name"
         } else {
             val dir = File(context.getExternalFilesDir(null), "backups").apply { mkdirs() }
             val file = File(dir, name)

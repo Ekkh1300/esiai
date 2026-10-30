@@ -149,7 +149,7 @@
     <string name="provider_cap_pdf">ورودی PDF</string>
     <string name="provider_cap_vision">تصاویر (بینیایی)</string>
     <string name="provider_cap_models_list">نقطهٔ اتصال فهرست مدل</string>
-    <string name="provider_capacity_helper">اگر ارائه‌دهندهٔ موردنظر قابلیتی را پشتیبانی نمی‌کند، خاموشش کن تا ESIAI آن را پیشنهاد ندهد.</string>
+    <string name="provider_capacity_helper">اگر ارائه‌دهندهٔ موردنظر قابلیتی را پشتیبانی نمی‌کند، خاموشش کن تا ESI Agent آن را پیشنهاد ندهد.</string>
     <string name="provider_test">تست اتصال</string>
     <string name="provider_testing">در حال تست اتصال…</string>
     <string name="provider_test_title">نتیجهٔ تست</string>
@@ -266,7 +266,7 @@
     <string name="settings_enter_sends">کلید Enter پیام را می‌فرستد</string>
     <string name="settings_enter_sends_hint">برای صفحه‌کلیدهای سخت‌افزاری؛ روی کیبورد لمسی اثر ندارد.</string>
     <string name="settings_data">داده و حریم خصوصی</string>
-    <string name="settings_privacy_note">ESIAI یک کلاینت است: گفتگوها و کلید فقط روی همین دستگاه می‌مانند. پیام‌ها مستقیماً به ارائه‌دهندهٔ تنظیم‌شده می‌روند. چیزی به ما نرسد.</string>
+    <string name="settings_privacy_note">ESI Agent یک کلاینت است: گفتگوها و کلید فقط روی همین دستگاه می‌مانند. پیام‌ها مستقیماً به ارائه‌دهندهٔ تنظیم‌شده می‌روند. چیزی به ما نرسد.</string>
     <string name="settings_export_data">خروجی داده‌ها (JSON)</string>
     <string name="settings_import_data">ورود داده‌ها (JSON)</string>
     <string name="settings_export_import_hint">پشتیبان از گفتگوها، دستیارها و ارائه‌دهنده‌ها. کلیدهای API مگر انتخابی جدا نباشد، خارج می‌شوند.</string>
@@ -277,13 +277,13 @@
     <string name="settings_import_conversations">%1$d گفتگو</string>
     <string name="settings_import_assistants">%1$d دستیار</string>
     <string name="settings_import_providers">%1$d ارائه‌دهنده</string>
-    <string name="settings_import_failed">ورود ناموفق بود — فایل معتبرِ پشتیبانِ ESIAI نیست.</string>
+    <string name="settings_import_failed">ورود ناموفق بود — فایل معتبرِ پشتیبانِ ESI Agent نیست.</string>
     <string name="settings_clear_data">پاک‌کردن همهٔ داده‌های محلی</string>
     <string name="settings_clear_data_warn">همهٔ گفتگوها، دستیارها و ارائه‌دهنده‌های این دستگاه پاک می‌شوند. اگر پشتیبان می‌خواهی، اول خروجی بگیر.</string>
     <string name="settings_clear_confirm">همه‌چیز پاک شود؟ بازگشت‌پذیر نیست.</string>
     <string name="settings_cleared">داده‌های محلی پاک شدند</string>
     <string name="settings_about">دربارهٔ برنامه</string>
-    <string name="settings_about_body">ESIAI یک کلاینت آزاد و متن‌باز برای چت هوش مصنوعی است: کلید API خودت را بیاور، آزادانه بین ارائه‌دهنده‌ها برو، همه‌چیز محلی بماند. ساخته‌شده با Kotlin، Jetpack Compose و Material 3.</string>
+    <string name="settings_about_body">ESI Agent یک کلاینت آزاد و متن‌باز برای چت هوش مصنوعی است: کلید API خودت را بیاور، آزادانه بین ارائه‌دهنده‌ها برو، همه‌چیز محلی بماند. ساخته‌شده با Kotlin، Jetpack Compose و Material 3.</string>
     <string name="settings_source_code">مرجع کد</string>
     <string name="settings_licenses">مجوزهای متن‌باز</string>
     <string name="settings_licenses_title">مجوزهای متن‌باز</string>
@@ -291,7 +291,7 @@
     <string name="settings_check_models">فهرست ارائه‌دهنده‌ها</string>
 
     <!-- Licenses screen -->
-    <string name="license_note">فهرست زیر پوشش‌دهندهٔ وابستگی‌های مستقیم ESIAI است. هر پروژه ابتدایی مجوز خودش با نام مشخص‌شده دارد.</string>
+    <string name="license_note">فهرست زیر پوشش‌دهندهٔ وابستگی‌های مستقیم ESI Agent است. هر پروژه ابتدایی مجوز خودش با نام مشخص‌شده دارد.</string>
     <string name="license_type_apache">مجوز Apache 2.0</string>
     <string name="license_type_mit">مجوز MIT</string>
 
@@ -316,7 +316,7 @@
 
     <!-- ══════════ Export / Import ══════════ -->
     <string name="export_share_title">هم‌رسانی با…</string>
-    <string name="export_file_default">esiai-export-%1$s.json</string>
+    <string name="export_file_default">esi-agent-export-%1$s.json</string>
     <string name="export_markdown_failed">خروجی ناموفق بود — نوشتن فایل ممکن نشد.</string>
     <string name="import_new">تازه: افزوده شد</string>
     <string name="import_merged">موجود: ادغام شد</string>

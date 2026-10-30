@@ -28,3 +28,6 @@ keystore.properties
 *.log
 .heapdump
 .cxx/
+
+# Local verification artefacts
+.tmp/

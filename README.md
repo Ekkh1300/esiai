@@ -77,11 +77,11 @@ uses plain `mavenCentral()` / `google()` / `gradlePluginPortal()`.
 - the local seed repo `third_party/local-maven/<group>/<artifact>/<version>/…` is always consulted
   first when present; artifacts pinned there (e.g. the committed KSP plugin marker POM) resolve
   even when every remote mirror is flaky;
-- setting `ESIAI.mavenMirrorUrl=<base>` in `local.properties` (git-ignored) enables two extra
+- setting `sokhan.mavenMirrorUrl=<base>` in `local.properties` (git-ignored) enables two extra
   tiers *before* the default repositories:
   1. Aliyun mirrors — `<base>/google`, `<base>/public`, `<base>/gradle-plugin` (pluginManagement)
      and `<base>/google`, `<base>/public` (dependencies); e.g.
-     `ESIAI.mavenMirrorUrl=https://maven.aliyun.com/repository`
+     `sokhan.mavenMirrorUrl=https://maven.aliyun.com/repository`
   2. Tencent (`mirrors.cloud.tencent.com/nexus/repository/maven-public`) as a gap-filler;
 - for a single missing artifact, pre-seed the local repo with the helper script:
 

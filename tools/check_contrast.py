@@ -1,4 +1,4 @@
-"""Contrast check for the ESIAI chat screen.
+"""Contrast check for the ESI Agent chat screen.
 
 Reads a screenshot, finds the text/bubble regions reported by the UI dump and
 computes the WCAG contrast ratio between the glyph pixels and their

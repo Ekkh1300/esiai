@@ -281,7 +281,7 @@ fun SettingsScreen(
             ) {
                 scope.launch {
                     pendingJson = viewModel.exportJson(includeKeys)
-                    exportLauncher.launch("esiai-backup.json")
+                    exportLauncher.launch("esi-agent-backup.json")
                 }
             }
             ActionRow(

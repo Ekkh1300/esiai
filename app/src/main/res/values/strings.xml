@@ -149,7 +149,7 @@
     <string name="provider_cap_pdf">PDF input</string>
     <string name="provider_cap_vision">Images (vision)</string>
     <string name="provider_cap_models_list">List-models endpoint</string>
-    <string name="provider_capacity_helper">Turn a capability off when this provider rejects that feature, so ESIAI won\u2019t offer it.</string>
+    <string name="provider_capacity_helper">Turn a capability off when this provider rejects that feature, so ESI Agent won\u2019t offer it.</string>
     <string name="provider_test">Test connection</string>
     <string name="provider_testing">Testing connection…</string>
     <string name="provider_test_title">Connection test</string>
@@ -266,7 +266,7 @@
     <string name="settings_enter_sends">Enter key sends the message</string>
     <string name="settings_enter_sends_hint">For hardware keyboards; touch keys are unaffected.</string>
     <string name="settings_data">Data &amp; privacy</string>
-    <string name="settings_privacy_note">ESIAI is a client: chats and keys live on this device only. Messages are sent directly to the provider you configure. Nothing is sent to us.</string>
+    <string name="settings_privacy_note">ESI Agent is a client: chats and keys live on this device only. Messages are sent directly to the provider you configure. Nothing is sent to us.</string>
     <string name="settings_export_data">Export data (JSON)</string>
     <string name="settings_import_data">Import data (JSON)</string>
     <string name="settings_export_import_hint">Backs up conversations, assistants and providers. API keys are excluded unless you choose otherwise.</string>
@@ -277,13 +277,13 @@
     <string name="settings_import_conversations">%1$d conversations</string>
     <string name="settings_import_assistants">%1$d assistants</string>
     <string name="settings_import_providers">%1$d providers</string>
-    <string name="settings_import_failed">Import failed — the file isn\u2019t a valid ESIAI backup.</string>
+    <string name="settings_import_failed">Import failed — the file isn\u2019t a valid ESI Agent backup.</string>
     <string name="settings_clear_data">Clear all local data</string>
     <string name="settings_clear_data_warn">Deletes every conversation, assistant and provider on this device. Export first if you need a backup.</string>
     <string name="settings_clear_confirm">Erase everything? This cannot be undone.</string>
     <string name="settings_cleared">Local data cleared</string>
     <string name="settings_about">About</string>
-    <string name="settings_about_body">ESIAI is a free, open-source AI chat client: bring your own API key, switch providers freely, keep everything local. Built with Kotlin, Jetpack Compose and Material 3.</string>
+    <string name="settings_about_body">ESI Agent is a free, open-source AI chat client: bring your own API key, switch providers freely, keep everything local. Built with Kotlin, Jetpack Compose and Material 3.</string>
     <string name="settings_source_code">Source code</string>
     <string name="settings_licenses">Open-source licenses</string>
     <string name="settings_licenses_title">Open-source licenses</string>
@@ -291,7 +291,7 @@
     <string name="settings_check_models">Open provider list</string>
 
     <!-- Licenses screen -->
-    <string name="license_note">The list below covers ESIAI\u2019s direct dependencies. Each project keeps its own license under the name shown.</string>
+    <string name="license_note">The list below covers ESI Agent\u2019s direct dependencies. Each project keeps its own license under the name shown.</string>
     <string name="license_type_apache">Apache License 2.0</string>
     <string name="license_type_mit">MIT License</string>
 
@@ -316,7 +316,7 @@
 
     <!-- ══════════ Export / Import ══════════ -->
     <string name="export_share_title">Share with…</string>
-    <string name="export_file_default">esiai-export-%1$s.json</string>
+    <string name="export_file_default">esi-agent-export-%1$s.json</string>
     <string name="export_markdown_failed">Export failed — couldn\u2019t write the file.</string>
     <string name="import_new">New: added</string>
     <string name="import_merged">Existed: merged</string>

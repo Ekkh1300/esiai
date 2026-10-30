@@ -3,7 +3,7 @@ package com.sokhan.chat.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * ESIAI palette — "ink & signal".
+ * ESI Agent palette — "ink & signal".
  *
  * A deep indigo carries the user's own voice, a cool teal marks the assistant
  * (the accent rail on assistant cards), and a warm copper is reserved for
