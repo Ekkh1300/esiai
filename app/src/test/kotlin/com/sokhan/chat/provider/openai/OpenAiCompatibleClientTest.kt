@@ -415,6 +415,39 @@ class OpenAiCompatibleClientTest {
     }
 
     @Test
+    fun `a rejected tool request is retried without the tools key`() = runTest {
+        // Wire-level replay of the OpenRouter downgrade: 404 for the tools
+        // request, then a plain request that answers normally.
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody(
+                """{"error":{"code":404,"message":"No endpoints found that support tool use."}}"""
+            )
+        )
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                sseBody(
+                    """data: {"choices":[{"index":0,"delta":{"content":"ok"}}]}""",
+                    """data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}""",
+                    "data: [DONE]"
+                )
+            )
+        )
+
+        val first = client.chatPayload(agentPayload(), context()).toList()
+        assertTrue(first.last().exceptionOrNull() is ChatError.NotFound)
+
+        val second = client.chatPayload(samplePayload, context()).toList()
+            .map { it.getOrThrow() }
+        assertEquals(
+            listOf(ChatStreamEvent.Delta("ok"), ChatStreamEvent.Finished("stop")),
+            second
+        )
+
+        assertTrue(server.takeRequest().body.readUtf8().contains("\"tools\":["))
+        assertTrue(!server.takeRequest().body.readUtf8().contains("\"tools\""))
+    }
+
+    @Test
     fun `non-streaming chat surfaces tool calls as deltas`() = runTest {
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
