@@ -14,6 +14,7 @@ object ProviderPresets {
         ProviderPreset("Groq", "https://api.groq.com/openai/v1"),
         ProviderPreset("Mistral", "https://api.mistral.ai/v1"),
         ProviderPreset("Together", "https://api.together.xyz/v1"),
+        ProviderPreset("Demon Route", "https://api.demonroute.com/v1"),
         ProviderPreset("Ollama (local)", "http://localhost:11434/v1"),
         ProviderPreset("LM Studio (local)", "http://localhost:1234/v1")
     )
